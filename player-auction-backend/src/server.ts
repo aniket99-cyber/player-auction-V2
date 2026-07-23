@@ -1,3 +1,5 @@
+import 'module-alias/register';
+import './alias';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { createApp } from './app';
