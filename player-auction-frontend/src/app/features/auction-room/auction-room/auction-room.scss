@@ -29,6 +29,10 @@
     letter-spacing: 0.04em;
   }
 
+  &__resume-finalizing {
+    width: 100%;
+  }
+
   &__round-badge {
     padding: 2px 10px;
     border-radius: 999px;
@@ -39,9 +43,26 @@
     letter-spacing: 0.04em;
   }
 
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
   &__stage {
     display: flex;
     justify-content: center;
+  }
+
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   &__bid-section {

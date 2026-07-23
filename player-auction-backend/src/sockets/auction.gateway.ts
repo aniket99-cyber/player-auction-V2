@@ -83,10 +83,6 @@ export function registerAuctionGateway(io: Server): void {
     auctionNamespace.to(auctionRoom(auctionId)).emit('auction:playerSelected', { player, selectionMode });
   });
 
-  eventBus.on('auction.timerTick', ({ auctionId, secondsRemaining }) => {
-    auctionNamespace.to(auctionRoom(auctionId)).emit('auction:timerTick', { secondsRemaining });
-  });
-
   eventBus.on('auction.teamBudgetUpdated', ({ auctionId, teamId, remainingBudget }) => {
     auctionNamespace.to(auctionRoom(auctionId)).emit('auction:teamBudgetUpdated', {
       teamId,

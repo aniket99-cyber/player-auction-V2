@@ -1,0 +1,42 @@
+.settings {
+  max-width: 640px;
+  padding: 20px;
+
+  h1 {
+    color: var(--auction-text-primary);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 24px;
+  }
+
+  &__card {
+    padding: 20px;
+    border-radius: 16px;
+    background: var(--auction-glass-fill);
+    border: 1px solid var(--auction-border);
+
+    &--danger {
+      border-color: var(--auction-danger);
+    }
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--auction-text-primary);
+
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__card-description {
+    color: var(--auction-text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 12px 0 16px;
+  }
+}

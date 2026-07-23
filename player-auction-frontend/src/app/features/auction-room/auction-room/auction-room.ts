@@ -5,6 +5,7 @@ import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuctionRoomService } from '../services/auction-room.service';
 import { AuctionRoomStore } from '../services/auction-room.store';
@@ -12,7 +13,6 @@ import { PlayerService } from '../../players/services/player.service';
 import { TeamService } from '../../teams/services/team.service';
 import { AuctionPlayerState, AuctionStatus, UserRole } from '../../../core/models';
 import { PlayerStage } from '../player-stage/player-stage';
-import { CountdownRing } from '../bid-panel/countdown-ring';
 import { BidCounter } from '../bid-panel/bid-counter';
 import { AdminConsole } from '../admin-console/admin-console';
 import { TeamStrip } from '../team-strip/team-strip';
@@ -20,7 +20,7 @@ import { FinalizeDialog, FinalizeDialogResult } from '../finalize-dialog/finaliz
 
 @Component({
   selector: 'app-auction-room',
-  imports: [PlayerStage, CountdownRing, BidCounter, AdminConsole, TeamStrip],
+  imports: [PlayerStage, BidCounter, AdminConsole, TeamStrip, MatButtonModule],
   templateUrl: './auction-room.html',
   styleUrl: './auction-room.scss',
 })
@@ -97,7 +97,16 @@ export class AuctionRoom implements OnInit {
     this.auctionId && this.auctionRoomService.startNextRound(this.auctionId).subscribe();
   }
 
-  private openFinalizeDialog(): void {
+  /**
+   * Public so the "Resume Finalizing" recovery button can reopen this —
+   * once the auction is in FINALIZING, a dismissed dialog (backdrop click,
+   * Escape, page reload) must not strand the auction with no way to pick a
+   * winner or mark unsold. `disableClose` stops the silent-dismiss case;
+   * this method is the reopen path for anything that slips through.
+   */
+  openFinalizeDialog(): void {
+    if (this.dialog.openDialogs.length > 0) return;
+
     const player = this.store.currentPlayer();
     if (!player || !this.auctionId) return;
 
@@ -110,6 +119,7 @@ export class AuctionRoom implements OnInit {
           teams: this.store.teams(),
         },
         width: '480px',
+        disableClose: true,
       })
       .afterClosed()
       .subscribe((result) => {
@@ -139,6 +149,9 @@ export class AuctionRoom implements OnInit {
         this.store.loadFromAuction(auction, currentPlayer, teams.data);
         if (auction.playerState === AuctionPlayerState.SELECTING) {
           this.store.isRevealing.set(true);
+        }
+        if (auction.playerState === AuctionPlayerState.FINALIZING && this.isAdmin()) {
+          this.openFinalizeDialog();
         }
       });
   }
@@ -174,11 +187,6 @@ export class AuctionRoom implements OnInit {
         this.store.applyEnteredFinalizing();
         if (this.isAdmin()) this.openFinalizeDialog();
       });
-
-    this.auctionRoomService
-      .onTimerTick()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ secondsRemaining }) => this.store.applyTimerTick(secondsRemaining));
 
     this.auctionRoomService
       .onTeamBudgetUpdated()

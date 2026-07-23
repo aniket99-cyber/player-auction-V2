@@ -7,12 +7,10 @@ export class AuctionRoomStore {
   readonly auctionStatus = signal<AuctionStatus | null>(null);
   readonly playerState = signal<AuctionPlayerState | null>(null);
   readonly bidIncrementRules = signal<BidIncrementRule[]>([]);
-  readonly bidTimerSeconds = signal<number>(15);
   readonly participatingTeamIds = signal<string[]>([]);
 
   readonly currentPlayer = signal<Player | null>(null);
   readonly currentBid = signal<{ amount: number } | null>(null);
-  readonly secondsRemaining = signal<number>(0);
   readonly teams = signal<Team[]>([]);
   readonly lastRejection = signal<{ message: string } | null>(null);
   readonly isRevealing = signal(false); // true during the wheel-spin window
@@ -48,10 +46,9 @@ export class AuctionRoomStore {
     this.auctionStatus.set(auction.status);
     this.playerState.set(auction.playerState ?? null);
     this.bidIncrementRules.set(auction.bidIncrementRules);
-    this.bidTimerSeconds.set(auction.settings.bidTimerSeconds);
     this.participatingTeamIds.set(auction.participatingTeams);
     this.currentPlayer.set(currentPlayer);
-    this.currentBid.set(auction.currentBid ?? null);
+    this.currentBid.set(auction.currentBid?.amount != null ? auction.currentBid : null);
     this.teams.set(teams);
     this.round.set(auction.round);
     this.awaitingNextRoundUnsoldCount.set(auction.unsoldThisRound.length);
@@ -60,7 +57,6 @@ export class AuctionRoomStore {
   setPlayerSelected(player: Player): void {
     this.currentPlayer.set(player);
     this.currentBid.set(null);
-    this.secondsRemaining.set(0);
     this.playerState.set(AuctionPlayerState.SELECTING);
     this.isRevealing.set(true);
   }
@@ -83,13 +79,8 @@ export class AuctionRoomStore {
     this.currentBid.set(amount === null ? null : { amount });
   }
 
-  applyTimerTick(secondsRemaining: number): void {
-    this.secondsRemaining.set(secondsRemaining);
-  }
-
   applyEnteredFinalizing(): void {
     this.playerState.set(AuctionPlayerState.FINALIZING);
-    this.secondsRemaining.set(0);
   }
 
   applyTeamBudgetUpdated(teamId: string, remainingBudget: number): void {
@@ -112,7 +103,6 @@ export class AuctionRoomStore {
     this.currentPlayer.set(null);
     this.currentBid.set(null);
     this.playerState.set(null);
-    this.secondsRemaining.set(0);
   }
 
   setStatus(status: AuctionStatus): void {
@@ -136,7 +126,6 @@ export class AuctionRoomStore {
     this.playerState.set(null);
     this.currentPlayer.set(null);
     this.currentBid.set(null);
-    this.secondsRemaining.set(0);
     this.teams.set([]);
     this.lastRejection.set(null);
     this.isRevealing.set(false);

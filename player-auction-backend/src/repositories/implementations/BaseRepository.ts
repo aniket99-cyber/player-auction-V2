@@ -56,4 +56,9 @@ export abstract class BaseRepository<TDocument, TCreateDto = Partial<TDocument>>
     const result = await this.model.findByIdAndDelete(id).exec();
     return result !== null;
   }
+
+  async deleteAll(): Promise<number> {
+    const result = await this.model.deleteMany({}).exec();
+    return result.deletedCount ?? 0;
+  }
 }

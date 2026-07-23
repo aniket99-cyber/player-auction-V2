@@ -8,53 +8,56 @@
     }
   </div>
 
-  <div class="auction-room__stage">
-    <app-player-stage
-      [player]="store.currentPlayer()"
-      [isRevealing]="store.isRevealing()"
-      (revealSettled)="onRevealSettled()"
-    />
-  </div>
-
-  <div class="auction-room__bid-section">
-    <div class="auction-room__current-bid">
-      <span class="auction-room__current-bid-label">Current Bid</span>
-      <span class="auction-room__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
+  <div class="auction-room__layout">
+    <div class="auction-room__stage">
+      <app-player-stage
+        [player]="store.currentPlayer()"
+        [isRevealing]="store.isRevealing()"
+        (revealSettled)="onRevealSettled()"
+      />
     </div>
 
-    @if (store.isBiddingOpen()) {
-      <app-countdown-ring
-        [secondsRemaining]="store.secondsRemaining()"
-        [totalSeconds]="store.bidTimerSeconds()"
+    <div class="auction-room__controls">
+      <div class="auction-room__bid-section">
+        <div class="auction-room__current-bid">
+          <span class="auction-room__current-bid-label">Current Bid</span>
+          <span class="auction-room__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
+        </div>
+      </div>
+
+      <app-bid-counter
+        [isAdmin]="isAdmin()"
+        [nextValidBidAmount]="store.nextValidBidAmount()"
+        [isBiddingOpen]="store.isBiddingOpen()"
+        [hasCurrentBid]="!!store.currentBid()"
+        [rejectionMessage]="store.lastRejection()?.message ?? null"
+        (bumpBid)="bumpBid()"
+        (undoBid)="undoBid()"
+        (finalize)="finalize()"
       />
-    }
+
+      @if (isAdmin() && store.isFinalizing()) {
+        <button mat-flat-button color="accent" class="auction-room__resume-finalizing" (click)="openFinalizeDialog()">
+          Resume Finalizing "{{ store.currentPlayer()?.name }}"
+        </button>
+      }
+
+      @if (isAdmin()) {
+        <app-admin-console
+          [status]="store.auctionStatus()"
+          [isBiddingOpen]="store.isBiddingOpen()"
+          [isAwaitingNextRound]="store.isAwaitingNextRound()"
+          [round]="store.round()"
+          [unsoldCount]="store.awaitingNextRoundUnsoldCount()"
+          (start)="start()"
+          (pause)="pause()"
+          (resume)="resume()"
+          (skip)="skip()"
+          (startNextRound)="startNextRound()"
+        />
+      }
+    </div>
   </div>
-
-  <app-bid-counter
-    [isAdmin]="isAdmin()"
-    [nextValidBidAmount]="store.nextValidBidAmount()"
-    [isBiddingOpen]="store.isBiddingOpen()"
-    [hasCurrentBid]="!!store.currentBid()"
-    [rejectionMessage]="store.lastRejection()?.message ?? null"
-    (bumpBid)="bumpBid()"
-    (undoBid)="undoBid()"
-    (finalize)="finalize()"
-  />
-
-  @if (isAdmin()) {
-    <app-admin-console
-      [status]="store.auctionStatus()"
-      [isBiddingOpen]="store.isBiddingOpen()"
-      [isAwaitingNextRound]="store.isAwaitingNextRound()"
-      [round]="store.round()"
-      [unsoldCount]="store.awaitingNextRoundUnsoldCount()"
-      (start)="start()"
-      (pause)="pause()"
-      (resume)="resume()"
-      (skip)="skip()"
-      (startNextRound)="startNextRound()"
-    />
-  }
 
   <app-team-strip [teams]="store.teams()" [highlightedTeamId]="null" />
 </div>

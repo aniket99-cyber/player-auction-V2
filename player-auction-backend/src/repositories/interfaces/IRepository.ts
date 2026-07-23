@@ -26,4 +26,6 @@ export interface IRepository<TDocument, TCreateDto = Partial<TDocument>> {
   create(data: TCreateDto): Promise<TDocument>;
   updateById(id: string, data: Partial<TDocument>): Promise<TDocument | null>;
   deleteById(id: string): Promise<boolean>;
+  /** Wipes every document in the collection. Returns the number deleted. */
+  deleteAll(): Promise<number>;
 }

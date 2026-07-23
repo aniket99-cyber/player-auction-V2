@@ -10,7 +10,6 @@ export interface CreateAuctionRequest {
   bidIncrementRules: BidIncrementRule[];
   selectionMode?: string;
   settings?: {
-    bidTimerSeconds?: number;
     autoAdvance?: boolean;
   };
 }

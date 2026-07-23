@@ -57,7 +57,7 @@ export class AuctionRepository extends BaseRepository<IAuction> implements IAuct
         {
           currentPlayer: nextPlayerId,
           playerState,
-          $unset: { currentBid: '', remainingSecondsAtPause: '' },
+          $unset: { currentBid: '' },
         },
         { new: true },
       )
@@ -75,20 +75,6 @@ export class AuctionRepository extends BaseRepository<IAuction> implements IAuct
   async setPlayerState(auctionId: string, playerState: AuctionPlayerState | null): Promise<IAuction | null> {
     return this.model
       .findByIdAndUpdate(auctionId, { playerState }, { new: true })
-      .exec();
-  }
-
-  async setPauseSnapshot(
-    auctionId: string,
-    remainingSecondsAtPause: number | null,
-  ): Promise<IAuction | null> {
-    if (remainingSecondsAtPause === null) {
-      return this.model
-        .findByIdAndUpdate(auctionId, { $unset: { remainingSecondsAtPause: '' } }, { new: true })
-        .exec();
-    }
-    return this.model
-      .findByIdAndUpdate(auctionId, { remainingSecondsAtPause }, { new: true })
       .exec();
   }
 

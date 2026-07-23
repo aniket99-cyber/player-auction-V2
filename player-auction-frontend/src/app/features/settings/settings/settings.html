@@ -1,0 +1,19 @@
+<div class="settings">
+  <h1>Settings</h1>
+
+  <div class="settings__card settings__card--danger">
+    <div class="settings__card-header">
+      <mat-icon>restart_alt</mat-icon>
+      <h2>New Session</h2>
+    </div>
+    <p class="settings__card-description">
+      Start a brand-new reunion tournament from scratch. This permanently deletes every Team,
+      Player, Owner, Captain, Auction and Bid in the system. Admin/team-manager login accounts are
+      not affected.
+    </p>
+    <button mat-flat-button color="warn" (click)="openResetDialog()">
+      <mat-icon>restart_alt</mat-icon>
+      Reset Session
+    </button>
+  </div>
+</div>

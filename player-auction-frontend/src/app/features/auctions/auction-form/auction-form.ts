@@ -44,7 +44,6 @@ export class AuctionForm implements OnInit {
     participatingTeams: this.fb.nonNullable.control<string[]>([], Validators.required),
     playerQueue: this.fb.nonNullable.control<string[]>([], Validators.required),
     selectionMode: [AuctionSelectionMode.SEQUENTIAL],
-    bidTimerSeconds: [15, [Validators.required, Validators.min(5), Validators.max(120)]],
     autoAdvance: [true],
   });
 
@@ -81,7 +80,6 @@ export class AuctionForm implements OnInit {
           { upTo: 1000, increment: 25 },
         ],
         settings: {
-          bidTimerSeconds: value.bidTimerSeconds,
           autoAdvance: value.autoAdvance,
         },
       })

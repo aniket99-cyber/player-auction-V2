@@ -19,7 +19,6 @@ export interface IAuctionRepository extends IRepository<IAuction> {
   ): Promise<IAuction | null>;
   setStatus(auctionId: string, status: AuctionStatus): Promise<IAuction | null>;
   setPlayerState(auctionId: string, playerState: AuctionPlayerState | null): Promise<IAuction | null>;
-  setPauseSnapshot(auctionId: string, remainingSecondsAtPause: number | null): Promise<IAuction | null>;
   removeFromQueue(auctionId: string, playerId: string): Promise<IAuction | null>;
   requeuePlayer(auctionId: string, playerId: string): Promise<IAuction | null>;
   addUnsoldThisRound(auctionId: string, playerId: string): Promise<IAuction | null>;

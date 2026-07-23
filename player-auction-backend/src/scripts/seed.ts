@@ -169,7 +169,7 @@ async function seed(): Promise<void> {
       { upTo: 1000, increment: 25 },
     ],
     selectionMode: AuctionSelectionMode.SEQUENTIAL,
-    settings: { bidTimerSeconds: 15, autoAdvance: true },
+    settings: { autoAdvance: true },
     createdBy: admin._id,
   });
   logger.info(`Created auction with ${pendingPlayers.length} players in the pool`);

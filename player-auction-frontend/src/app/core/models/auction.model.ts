@@ -12,7 +12,6 @@ export interface CurrentBid {
 }
 
 export interface AuctionSettings {
-  bidTimerSeconds: number;
   autoAdvance: boolean;
 }
 

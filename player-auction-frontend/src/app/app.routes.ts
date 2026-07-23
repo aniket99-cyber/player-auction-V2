@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
+import { UserRole } from './core/models';
 
 export const routes: Routes = [
   {
@@ -144,6 +146,12 @@ export const routes: Routes = [
         path: 'captains/:id/edit',
         loadComponent: () =>
           import('./features/captains/captain-form/captain-form').then((m) => m.CaptainForm),
+      },
+      {
+        path: 'settings',
+        canActivate: [roleGuard([UserRole.ADMIN])],
+        loadComponent: () =>
+          import('./features/settings/settings/settings').then((m) => m.Settings),
       },
     ],
   },

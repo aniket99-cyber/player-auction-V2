@@ -11,4 +11,5 @@ export interface IAuditLogRepository {
   }): Promise<IAuditLog>;
 
   findByEntity(entityType: string, entityId: string): Promise<IAuditLog[]>;
+  deleteAll(): Promise<number>;
 }

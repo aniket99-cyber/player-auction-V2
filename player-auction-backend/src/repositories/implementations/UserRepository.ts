@@ -14,4 +14,11 @@ export class UserRepository extends BaseRepository<IUser> implements IUserReposi
     }
     return query.exec();
   }
+
+  // User accounts must survive a session reset — override the inherited
+  // bulk-wipe to make that guarantee hold even if future code calls it here
+  // by mistake.
+  override async deleteAll(): Promise<number> {
+    throw new Error('deleteAll is disabled for UserRepository — user accounts must never be bulk-deleted');
+  }
 }

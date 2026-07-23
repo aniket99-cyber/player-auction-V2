@@ -57,7 +57,7 @@ export class AuctionRoomService {
     return this.api.post<void>(`/auctions/${auctionId}/skip`, {});
   }
 
-  /** Stops the timer and opens the team-picker — does not decide sold/unsold by itself. */
+  /** Opens the team-picker — does not decide sold/unsold by itself. */
   finalize(auctionId: string): Observable<void> {
     return this.api.post<void>(`/auctions/${auctionId}/finalize`, {});
   }
@@ -122,10 +122,6 @@ export class AuctionRoomService {
 
   onPlayerSelected(): Observable<PlayerSelectedPayload> {
     return this.socketService.on<PlayerSelectedPayload>(AUCTION_NAMESPACE, 'auction:playerSelected');
-  }
-
-  onTimerTick(): Observable<{ secondsRemaining: number }> {
-    return this.socketService.on<{ secondsRemaining: number }>(AUCTION_NAMESPACE, 'auction:timerTick');
   }
 
   onPlayerSold(): Observable<PlayerSoldPayload> {

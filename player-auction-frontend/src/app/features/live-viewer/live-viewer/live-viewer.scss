@@ -66,6 +66,16 @@
     backdrop-filter: blur(20px) saturate(140%);
     border: 1px solid var(--auction-glass-border);
     border-radius: 18px;
+
+    // On the phone-width viewer, let the player card use most of the stage
+    // width instead of the compact fixed-width card used elsewhere. Beats
+    // player-card.scss's own <900px media query via higher specificity.
+    ::ng-deep .player-card.player-card {
+      width: 80%;
+      max-width: none;
+      margin-left: auto;
+      margin-right: auto;
+    }
   }
 
   &__round-banner {

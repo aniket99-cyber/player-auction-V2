@@ -24,10 +24,6 @@
       <span class="live-viewer__current-bid-label">Current Bid</span>
       <span class="live-viewer__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
     </div>
-
-    @if (store.isBiddingOpen()) {
-      <app-countdown-ring [secondsRemaining]="store.secondsRemaining()" [totalSeconds]="store.bidTimerSeconds()" />
-    }
   </section>
 
   <section class="live-viewer__section">

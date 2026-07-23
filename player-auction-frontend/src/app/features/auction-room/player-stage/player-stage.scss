@@ -1,8 +1,21 @@
+// The host element (app-player-stage) is an unstyled custom element and
+// defaults to `display: inline`, which shrinks it to content width and
+// breaks centering in any flex/grid parent. Force it to behave as a full
+// block so the flex-centering below actually centers within the parent.
+:host {
+  display: block;
+  width: 100%;
+}
+
 .player-stage {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 340px;
+  min-height: 420px;
+
+  @media (max-width: 900px) {
+    min-height: 340px;
+  }
 
   &__empty {
     color: var(--auction-text-secondary);

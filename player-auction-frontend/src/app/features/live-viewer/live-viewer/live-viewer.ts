@@ -10,7 +10,6 @@ import { LiveViewerStore } from '../services/live-viewer.store';
 import { PlayerService } from '../../players/services/player.service';
 import { TeamService } from '../../teams/services/team.service';
 import { PlayerStage } from '../../auction-room/player-stage/player-stage';
-import { CountdownRing } from '../../auction-room/bid-panel/countdown-ring';
 import { Leaderboard } from '../leaderboard/leaderboard';
 import { AuctionProgress } from '../auction-progress/auction-progress';
 import { LatestActivity } from '../latest-activity/latest-activity';
@@ -19,15 +18,7 @@ import { Statistics } from '../statistics/statistics';
 
 @Component({
   selector: 'app-live-viewer',
-  imports: [
-    PlayerStage,
-    CountdownRing,
-    Leaderboard,
-    AuctionProgress,
-    LatestActivity,
-    TeamsPanel,
-    Statistics,
-  ],
+  imports: [PlayerStage, Leaderboard, AuctionProgress, LatestActivity, TeamsPanel, Statistics],
   templateUrl: './live-viewer.html',
   styleUrl: './live-viewer.scss',
 })
@@ -120,11 +111,6 @@ export class LiveViewer implements OnInit {
       .onEnteredFinalizing()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.store.applyEnteredFinalizing());
-
-    this.auctionRoomService
-      .onTimerTick()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ secondsRemaining }) => this.store.applyTimerTick(secondsRemaining));
 
     this.auctionRoomService
       .onTeamBudgetUpdated()

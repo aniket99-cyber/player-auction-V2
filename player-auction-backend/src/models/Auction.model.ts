@@ -21,10 +21,8 @@ export interface IAuction extends Document {
   participatingTeams: Types.ObjectId[];
   selectionMode: AuctionSelectionMode;
   settings: {
-    bidTimerSeconds: number;
     autoAdvance: boolean;
   };
-  remainingSecondsAtPause?: number;
   round: number;
   unsoldThisRound: Types.ObjectId[];
   createdBy: Types.ObjectId;
@@ -58,10 +56,8 @@ const auctionSchema = new Schema<IAuction>(
       default: AuctionSelectionMode.SEQUENTIAL,
     },
     settings: {
-      bidTimerSeconds: { type: Number, default: 15, min: 5, max: 120 },
       autoAdvance: { type: Boolean, default: true },
     },
-    remainingSecondsAtPause: { type: Number },
     round: { type: Number, default: 1, min: 1 },
     unsoldThisRound: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },

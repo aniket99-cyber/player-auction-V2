@@ -14,7 +14,6 @@ export interface DomainEventMap {
   'auction.resumed': { auctionId: string };
   'auction.completed': { auctionId: string };
   'auction.playerSelected': { auctionId: string; player: IPlayer; selectionMode: string };
-  'auction.timerTick': { auctionId: string; secondsRemaining: number };
   'auction.teamBudgetUpdated': { auctionId: string; teamId: string; remainingBudget: number };
   'auction.awaitingNextRound': { auctionId: string; round: number; unsoldCount: number };
   'auction.roundStarted': { auctionId: string; round: number };

@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>Reset Session</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <p class="reset-dialog__warning">
+      This permanently deletes every Team, Player, Owner, Captain, Auction and Bid — the entire
+      tournament data set. This cannot be undone. Admin/team-manager login accounts are not affected.
+    </p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Type "{{ confirmPhrase }}" to confirm</mat-label>
+      <input matInput formControlName="confirmation" autocomplete="off" />
+      @if (form.controls.confirmation.hasError('mismatch') && form.controls.confirmation.touched) {
+        <mat-error>Type "{{ confirmPhrase }}" exactly to confirm</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="reset-dialog__error">{{ message }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="warn" type="submit" [disabled]="isSubmitting()">
+      Reset Everything
+    </button>
+  </mat-dialog-actions>
+</form>

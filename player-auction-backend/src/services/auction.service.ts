@@ -17,8 +17,6 @@ const SELECTION_ANIMATION_MS = 4000;
 const SETTLING_DELAY_MS = 2500;
 
 export class AuctionService {
-  private readonly countdownIntervals = new Map<string, NodeJS.Timeout>();
-  private readonly countdownSecondsRemaining = new Map<string, number>();
   private readonly pendingTimeouts = new Map<string, NodeJS.Timeout>();
   // How many players entered the *current* round's queue — used to detect
   // "this round sold nobody" (unsoldThisRound.length reaches this same
@@ -69,14 +67,8 @@ export class AuctionService {
       throw ApiError.badRequest('Only a live auction can be paused');
     }
 
-    const remaining = this.countdownSecondsRemaining.get(auctionId) ?? null;
-    this.clearCountdown(auctionId);
     this.clearPendingTimeout(auctionId);
-
     await this.auctionRepository.setStatus(auctionId, AuctionStatus.PAUSED);
-    if (remaining !== null) {
-      await this.auctionRepository.setPauseSnapshot(auctionId, remaining);
-    }
 
     await this.auditLogRepository.record({
       actor: actorId,
@@ -97,7 +89,6 @@ export class AuctionService {
     }
 
     await this.auctionRepository.setStatus(auctionId, AuctionStatus.LIVE);
-    await this.auctionRepository.setPauseSnapshot(auctionId, null);
 
     await this.auditLogRepository.record({
       actor: actorId,
@@ -108,13 +99,13 @@ export class AuctionService {
 
     eventBus.emit('auction.resumed', { auctionId });
 
-    if (auction.playerState === AuctionPlayerState.IN_BIDDING) {
-      this.startCountdown(auctionId, auction.remainingSecondsAtPause ?? auction.settings.bidTimerSeconds);
-    } else if (auction.playerState === AuctionPlayerState.SELECTING && auction.currentPlayer) {
+    // Bidding has no timer to resume — it just re-opens for bumps. SELECTING
+    // still has the reveal-animation timeout to restart. FINALIZING has
+    // nothing to restart either way; the admin still has to confirm a
+    // winning team or unsold.
+    if (auction.playerState === AuctionPlayerState.SELECTING && auction.currentPlayer) {
       this.scheduleSelectionTimeout(auctionId, auction.currentPlayer.toString());
     }
-    // FINALIZING has no timer to resume — the admin still needs to confirm
-    // a winning team or unsold; nothing to restart there.
   }
 
   async selectNextPlayer(auctionId: string): Promise<IPlayer | null> {
@@ -154,7 +145,6 @@ export class AuctionService {
     }
 
     const playerId = auction.currentPlayer.toString();
-    this.clearCountdown(auctionId);
     this.clearPendingTimeout(auctionId);
 
     // Skip reverts to PENDING (not UNSOLD) — semantically "never got to
@@ -210,10 +200,6 @@ export class AuctionService {
 
     await this.auctionRepository.bumpCurrentBid(auctionId, newAmount, previousAmount);
 
-    // A bid always buys more time — reset to the full duration, per the
-    // confirmed design (the timer stays, resetting on every bump).
-    this.startCountdown(auctionId, auction.settings.bidTimerSeconds);
-
     eventBus.emit('auction.bidBumped', { auctionId, amount: newAmount });
   }
 
@@ -224,7 +210,7 @@ export class AuctionService {
     if (auction.playerState !== AuctionPlayerState.IN_BIDDING || !auction.currentPlayer) {
       throw ApiError.badRequest('No active bidding to undo');
     }
-    if (auction.currentBid === undefined) {
+    if (auction.currentBid?.amount == null) {
       throw ApiError.badRequest('No bid to undo');
     }
 
@@ -244,42 +230,41 @@ export class AuctionService {
   }
 
   /**
-   * Stops the timer and opens the finalize step — triggered either by the
-   * timer running out or by the admin clicking Finalize early. Does NOT
-   * decide sold/unsold by itself; the admin still has to pick a team (or
-   * Unsold) via confirmSale().
+   * Opens the finalize step — the admin clicks Finalize whenever they're
+   * ready to close bidding on the current player (there's no timer forcing
+   * this). Does NOT decide sold/unsold by itself; the admin still has to
+   * pick a team (or Unsold) via confirmSale().
    */
-  async enterFinalizing(auctionId: string, actorId?: string): Promise<void> {
+  async enterFinalizing(auctionId: string, actorId: string): Promise<void> {
     const auction = await this.requireAuction(auctionId);
 
     if (auction.playerState !== AuctionPlayerState.IN_BIDDING || !auction.currentPlayer) {
       throw ApiError.badRequest('No active bidding to finalize');
     }
 
-    this.clearCountdown(auctionId);
     this.clearPendingTimeout(auctionId);
     await this.auctionRepository.setPlayerState(auctionId, AuctionPlayerState.FINALIZING);
 
     await this.auditLogRepository.record({
-      // Timer-triggered expiry has no acting user — attribute it to the
-      // auction's creator, same fallback the old finalize flow used.
-      actor: actorId ?? auction.createdBy.toString(),
+      actor: actorId,
       action: 'auction.enteredFinalizing',
       entityType: 'Auction',
       entityId: auctionId,
-      after: { currentBid: auction.currentBid ?? null },
+      after: { currentBid: auction.currentBid?.amount != null ? auction.currentBid : null },
     });
 
     eventBus.emit('auction.enteredFinalizing', {
       auctionId,
-      currentBid: auction.currentBid ?? null,
+      currentBid: auction.currentBid?.amount != null ? auction.currentBid : null,
     });
   }
 
   /**
    * The admin's actual decision: sell the current player to `teamId`, or
    * pass `null` to mark unsold. This is the only place team assignment
-   * happens in the whole bidding flow.
+   * happens in the whole bidding flow. If nobody ever bumped the bid,
+   * selling to a team charges the player's base price instead of blocking
+   * the sale.
    */
   async confirmSale(auctionId: string, actorId: string, teamId: string | null): Promise<void> {
     const auction = await this.requireAuction(auctionId);
@@ -298,11 +283,8 @@ export class AuctionService {
       if (!auction.participatingTeams.some((t) => t.toString() === teamId)) {
         throw ApiError.badRequest('Team is not participating in this auction');
       }
-      if (!auction.currentBid) {
-        throw ApiError.badRequest('Cannot sell to a team with no bid on the table — mark unsold instead');
-      }
 
-      const amount = auction.currentBid.amount;
+      const amount = auction.currentBid?.amount ?? player.basePrice;
       const updatedTeam = await this.teamRepository.deductBudget(teamId, amount);
       if (!updatedTeam) {
         throw ApiError.badRequest('That team cannot afford this bid — pick another team or mark unsold');
@@ -351,7 +333,6 @@ export class AuctionService {
   }
 
   async completeAuction(auctionId: string): Promise<void> {
-    this.clearCountdown(auctionId);
     this.clearPendingTimeout(auctionId);
     this.roundStartQueueSize.delete(auctionId);
     await this.auctionRepository.setStatus(auctionId, AuctionStatus.COMPLETED);
@@ -420,7 +401,6 @@ export class AuctionService {
       return;
     }
 
-    this.clearCountdown(auctionId);
     this.clearPendingTimeout(auctionId);
     await this.auctionRepository.setPlayerState(auctionId, AuctionPlayerState.AWAITING_NEXT_ROUND);
 
@@ -441,7 +421,7 @@ export class AuctionService {
   }
 
   private getNextValidBidAmount(auction: IAuction, player: IPlayer): number {
-    if (!auction.currentBid) {
+    if (auction.currentBid?.amount == null) {
       return player.basePrice;
     }
     return auction.currentBid.amount + this.getIncrement(auction.bidIncrementRules, auction.currentBid.amount);
@@ -479,43 +459,26 @@ export class AuctionService {
     if (!auction.currentPlayer || auction.currentPlayer.toString() !== playerId) return;
 
     await this.auctionRepository.setPlayerState(auctionId, AuctionPlayerState.IN_BIDDING);
-    this.startCountdown(auctionId, auction.settings.bidTimerSeconds);
-  }
-
-  private startCountdown(auctionId: string, seconds: number): void {
-    this.clearCountdown(auctionId);
-    let remaining = seconds;
-    this.countdownSecondsRemaining.set(auctionId, remaining);
-
-    const interval = setInterval(() => {
-      remaining -= 1;
-      this.countdownSecondsRemaining.set(auctionId, remaining);
-      eventBus.emit('auction.timerTick', { auctionId, secondsRemaining: remaining });
-
-      if (remaining <= 0) {
-        this.clearCountdown(auctionId);
-        // Time's up — open the finalize step, but never auto-decide a
-        // winner (there's no team attached to the running counter).
-        this.enterFinalizing(auctionId).catch((err) =>
-          logger.error('Failed to enter finalizing on timer expiry', { auctionId, err }),
-        );
-      }
-    }, 1000);
-
-    this.countdownIntervals.set(auctionId, interval);
-  }
-
-  private clearCountdown(auctionId: string): void {
-    const interval = this.countdownIntervals.get(auctionId);
-    if (interval) clearInterval(interval);
-    this.countdownIntervals.delete(auctionId);
-    this.countdownSecondsRemaining.delete(auctionId);
   }
 
   private clearPendingTimeout(auctionId: string): void {
     const timeout = this.pendingTimeouts.get(auctionId);
     if (timeout) clearTimeout(timeout);
     this.pendingTimeouts.delete(auctionId);
+  }
+
+  /**
+   * Clears every in-memory timer this service holds, regardless of auction
+   * ID — used by a full session reset, where the underlying Auction
+   * documents are about to be deleted out from under any scheduled
+   * callbacks (which would otherwise fire against now-nonexistent auctions).
+   */
+  clearAllInMemoryState(): void {
+    for (const timeout of this.pendingTimeouts.values()) {
+      clearTimeout(timeout);
+    }
+    this.pendingTimeouts.clear();
+    this.roundStartQueueSize.clear();
   }
 
   private async requireAuction(auctionId: string): Promise<IAuction> {

@@ -20,7 +20,6 @@ export const createAuctionSchema = Joi.object({
     .valid(...Object.values(AuctionSelectionMode))
     .optional(),
   settings: Joi.object({
-    bidTimerSeconds: Joi.number().integer().min(5).max(120).optional(),
     autoAdvance: Joi.boolean().optional(),
   }).optional(),
 });
