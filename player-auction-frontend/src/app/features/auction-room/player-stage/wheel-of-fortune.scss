@@ -1,0 +1,37 @@
+.wheel-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  padding: 40px;
+
+  &__card {
+    width: 220px;
+    height: 300px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--auction-violet), var(--auction-gold));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+    box-shadow: var(--auction-shadow-glow-accent);
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.35), transparent 60%);
+  }
+
+  &__label {
+    color: var(--auction-bg-canvas);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    padding: 0 12px;
+    backface-visibility: hidden;
+  }
+}

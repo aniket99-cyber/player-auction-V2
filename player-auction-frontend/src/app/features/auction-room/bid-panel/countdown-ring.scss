@@ -1,0 +1,45 @@
+.countdown-ring {
+  width: 96px;
+  height: 96px;
+
+  &__rotator {
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
+
+  &__track {
+    fill: none;
+    stroke: var(--auction-bg-overlay);
+    stroke-width: 6;
+  }
+
+  &__progress {
+    fill: none;
+    stroke: var(--auction-accent);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 200ms ease;
+  }
+
+  &__text {
+    fill: var(--auction-text-primary);
+    font-size: 28px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &--critical {
+    .countdown-ring__rotator {
+      animation: pulse-critical 1s ease-in-out infinite;
+    }
+
+    .countdown-ring__progress {
+      stroke: var(--auction-danger);
+    }
+  }
+}
+
+@keyframes pulse-critical {
+  0%, 100% { transform: rotate(-90deg) scale(1); }
+  50% { transform: rotate(-90deg) scale(1.06); }
+}

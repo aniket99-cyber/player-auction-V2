@@ -1,5 +1,15 @@
 .auction-room {
   color: var(--auction-text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  position: relative;
+  transition: background 300ms ease;
+
+  &--sold-flash {
+    animation: sold-flash 1.5s ease;
+  }
 
   &__status {
     display: flex;
@@ -9,14 +19,59 @@
     color: var(--auction-text-secondary);
   }
 
-  &__latest-bid {
-    margin-top: 16px;
-    font-size: 20px;
-
-    strong {
-      color: var(--auction-gold);
-    }
+  &__paused-badge {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(244, 185, 66, 0.16);
+    color: var(--auction-gold);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
+
+  &__round-badge {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--auction-bg-overlay);
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__stage {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__bid-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__current-bid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__current-bid-label {
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &__current-bid-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--auction-accent);
+    text-shadow: var(--auction-shadow-glow-accent);
+  }
+
 }
 
 .status-dot {
@@ -29,4 +84,10 @@
     background: var(--auction-success);
     box-shadow: 0 0 8px var(--auction-success);
   }
+}
+
+@keyframes sold-flash {
+  0% { background: transparent; }
+  20% { background: rgba(244, 185, 66, 0.35); }
+  100% { background: transparent; }
 }

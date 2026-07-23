@@ -1,16 +1,23 @@
 import { EventEmitter } from 'node:events';
-import type { IBid } from '@models/Bid.model';
 import type { IPlayer } from '@models/Player.model';
 import type { ITeam } from '@models/Team.model';
 
 export interface DomainEventMap {
-  'bid.placed': { auctionId: string; bid: IBid };
+  'auction.bidBumped': { auctionId: string; amount: number };
+  'auction.bidUndone': { auctionId: string; amount: number | null };
+  'auction.enteredFinalizing': { auctionId: string; currentBid: { amount: number } | null };
   'player.sold': { auctionId: string; player: IPlayer; teamId: string; finalPrice: number };
   'player.unsold': { auctionId: string; player: IPlayer };
+  'player.skipped': { auctionId: string; player: IPlayer };
   'auction.started': { auctionId: string };
   'auction.paused': { auctionId: string };
+  'auction.resumed': { auctionId: string };
   'auction.completed': { auctionId: string };
-  'auction.nextPlayer': { auctionId: string; player: IPlayer };
+  'auction.playerSelected': { auctionId: string; player: IPlayer; selectionMode: string };
+  'auction.timerTick': { auctionId: string; secondsRemaining: number };
+  'auction.teamBudgetUpdated': { auctionId: string; teamId: string; remainingBudget: number };
+  'auction.awaitingNextRound': { auctionId: string; round: number; unsoldCount: number };
+  'auction.roundStarted': { auctionId: string; round: number };
   'team.created': { team: ITeam };
   'team.updated': { team: ITeam };
   'team.deleted': { teamId: string };

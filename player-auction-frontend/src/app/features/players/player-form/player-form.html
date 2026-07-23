@@ -1,0 +1,103 @@
+<div class="player-form">
+  <h1>{{ isEditMode() ? 'Edit Player' : 'Register Player' }}</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="player-form__form">
+    <div class="player-form__image-section">
+      <div class="player-form__image-preview">
+        @if (imagePreviewUrl()) {
+          <img [src]="imagePreviewUrl()" alt="Player photo preview" />
+        } @else {
+          <mat-icon>person</mat-icon>
+        }
+      </div>
+      <label class="player-form__image-upload-btn">
+        <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onImageSelected($event)" hidden />
+        <mat-icon>upload</mat-icon>
+        Upload Photo
+      </label>
+    </div>
+
+    <div class="player-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Player Name</mat-label>
+        <input matInput formControlName="name" />
+        @if (form.controls.name.hasError('required')) {
+          <mat-error>Player name is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Position</mat-label>
+        <mat-select formControlName="role">
+          @for (role of roleOptions; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.role.hasError('required')) {
+          <mat-error>Position is required</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="player-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Country</mat-label>
+        <input matInput formControlName="country" />
+        @if (form.controls.country.hasError('required')) {
+          <mat-error>Country is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Age</mat-label>
+        <input matInput type="number" formControlName="age" />
+      </mat-form-field>
+    </div>
+
+    <h3 class="player-form__section-title">School Details</h3>
+    <div class="player-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Passing Year</mat-label>
+        <input matInput type="number" formControlName="passingYear" placeholder="e.g. 2015" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Previous Team</mat-label>
+        <input matInput formControlName="previousTeam" placeholder="e.g. House Blue" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Base Price</mat-label>
+      <input matInput type="number" formControlName="basePrice" />
+      @if (form.controls.basePrice.hasError('required')) {
+        <mat-error>Base price is required</mat-error>
+      }
+    </mat-form-field>
+
+    <h3 class="player-form__section-title">Statistics</h3>
+    <div class="player-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Appearances</mat-label>
+        <input matInput type="number" formControlName="appearances" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Goals</mat-label>
+        <input matInput type="number" formControlName="goals" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Assists</mat-label>
+      <input matInput type="number" formControlName="assists" />
+    </mat-form-field>
+
+    <div class="player-form__actions">
+      <button mat-button type="button" routerLink="/players">Cancel</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+        {{ isEditMode() ? 'Save Changes' : 'Register Player' }}
+      </button>
+    </div>
+  </form>
+</div>

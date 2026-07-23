@@ -1,0 +1,94 @@
+.captain-list {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    h1 {
+      color: var(--auction-text-primary);
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__loading,
+  &__empty {
+    color: var(--auction-text-secondary);
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 20px;
+    background: var(--auction-bg-surface);
+    border: 1px solid var(--auction-border);
+    border-radius: 14px;
+    position: relative;
+  }
+
+  &__photo {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--auction-bg-overlay);
+    border: 2px solid var(--auction-gold);
+    margin-bottom: 8px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    mat-icon {
+      color: var(--auction-text-secondary);
+    }
+  }
+
+  &__name {
+    color: var(--auction-text-primary);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  &__position {
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__year {
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+  }
+
+  &__team {
+    color: var(--auction-accent);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+}

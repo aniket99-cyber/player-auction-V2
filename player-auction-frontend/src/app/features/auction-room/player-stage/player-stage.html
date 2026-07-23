@@ -1,0 +1,11 @@
+<div class="player-stage">
+  @if (player(); as p) {
+    @if (isRevealing()) {
+      <app-wheel-of-fortune [player]="p" [isRevealing]="isRevealing()" (settled)="revealSettled.emit()" />
+    } @else {
+      <app-player-card [player]="p" />
+    }
+  } @else {
+    <div class="player-stage__empty">Waiting for the next player...</div>
+  }
+</div>

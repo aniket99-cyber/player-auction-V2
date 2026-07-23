@@ -10,14 +10,14 @@ interface CreatePlayerInput {
   role: PlayerRole;
   country: string;
   age?: number;
+  passingYear?: number;
+  previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
   stats?: {
-    matches?: number;
-    runs?: number;
-    wickets?: number;
-    average?: number;
-    strikeRate?: number;
+    appearances?: number;
+    goals?: number;
+    assists?: number;
   };
 }
 
@@ -26,6 +26,8 @@ interface UpdatePlayerInput {
   role?: PlayerRole;
   country?: string;
   age?: number;
+  passingYear?: number;
+  previousTeam?: string;
   basePrice?: number;
   imageUrl?: string;
   stats?: CreatePlayerInput['stats'];

@@ -1,0 +1,24 @@
+<div class="latest-activity">
+  <h3 class="latest-activity__title">Latest Activity</h3>
+  @if (entries().length === 0) {
+    <p class="latest-activity__empty">No sales yet this session</p>
+  } @else {
+    <div class="latest-activity__list">
+      @for (entry of entries(); track entry.id) {
+        <div
+          class="latest-activity__row"
+          [class.latest-activity__row--sold]="entry.outcome === 'SOLD'"
+          [class.latest-activity__row--unsold]="entry.outcome === 'UNSOLD'"
+        >
+          <span class="latest-activity__icon">{{ entry.outcome === 'SOLD' ? '✓' : '✕' }}</span>
+          <span class="latest-activity__name">{{ entry.player.name }}</span>
+          @if (entry.outcome === 'SOLD') {
+            <span class="latest-activity__detail">{{ teamName(entry.teamId) }} · {{ entry.finalPrice }}</span>
+          } @else {
+            <span class="latest-activity__detail">Unsold</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

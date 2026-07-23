@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from 'mongoose';
+import { idTransformOptions } from '@models/schema-options';
 import { BidStatus } from '@constants/enums';
 
 export interface IBid extends Document {
@@ -22,7 +23,7 @@ const bidSchema = new Schema<IBid>(
     status: { type: String, enum: Object.values(BidStatus), default: BidStatus.ACTIVE },
     placedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
-  { timestamps: true },
+  { timestamps: true, ...idTransformOptions },
 );
 
 bidSchema.index({ auction: 1, player: 1, createdAt: -1 });

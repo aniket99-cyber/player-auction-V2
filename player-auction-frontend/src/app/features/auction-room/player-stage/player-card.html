@@ -1,0 +1,36 @@
+<div class="player-card" [class]="'player-card--' + rarityTier()">
+  <div class="player-card__photo">
+    @if (player().imageUrl) {
+      <img [src]="player().imageUrl" [alt]="player().name" />
+    } @else {
+      <span class="player-card__initial">{{ player().name.charAt(0) }}</span>
+    }
+  </div>
+
+  <h2 class="player-card__name">{{ player().name }}</h2>
+  <span class="player-card__meta">{{ player().role }} · {{ player().country }}</span>
+
+  <div class="player-card__stats">
+    <div class="player-card__stat">
+      <span class="player-card__stat-value">{{ player().stats.appearances }}</span>
+      <span class="player-card__stat-label">Appearances</span>
+    </div>
+    @if (player().stats.goals !== undefined) {
+      <div class="player-card__stat">
+        <span class="player-card__stat-value">{{ player().stats.goals }}</span>
+        <span class="player-card__stat-label">Goals</span>
+      </div>
+    }
+    @if (player().stats.assists !== undefined) {
+      <div class="player-card__stat">
+        <span class="player-card__stat-value">{{ player().stats.assists }}</span>
+        <span class="player-card__stat-label">Assists</span>
+      </div>
+    }
+  </div>
+
+  <div class="player-card__base-price">
+    <span class="player-card__base-price-label">Base Price</span>
+    <span class="player-card__base-price-value">{{ player().basePrice }}</span>
+  </div>
+</div>

@@ -8,10 +8,10 @@ interface FormationRow {
 }
 
 const ROLE_ORDER: { role: PlayerRole; label: string }[] = [
-  { role: 'WICKET_KEEPER' as PlayerRole, label: 'Wicket Keeper' },
-  { role: 'BATSMAN' as PlayerRole, label: 'Batsmen' },
-  { role: 'ALL_ROUNDER' as PlayerRole, label: 'All-Rounders' },
-  { role: 'BOWLER' as PlayerRole, label: 'Bowlers' },
+  { role: 'GOALKEEPER' as PlayerRole, label: 'Goalkeeper' },
+  { role: 'DEFENDER' as PlayerRole, label: 'Defenders' },
+  { role: 'MIDFIELDER' as PlayerRole, label: 'Midfielders' },
+  { role: 'FORWARD' as PlayerRole, label: 'Forwards' },
 ];
 
 @Component({
@@ -23,6 +23,7 @@ const ROLE_ORDER: { role: PlayerRole; label: string }[] = [
 export class FormationView {
   readonly players = input.required<Player[]>();
   readonly primaryColor = input<string>('#2fd0ff');
+  readonly captainId = input<string | undefined>(undefined);
 
   readonly rows = computed<FormationRow[]>(() => {
     const all = this.players();

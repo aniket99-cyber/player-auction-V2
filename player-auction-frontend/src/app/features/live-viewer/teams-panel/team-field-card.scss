@@ -1,0 +1,146 @@
+// Mobile-first: base styles target small screens; enhanced at wider breakpoints.
+.team-field-card {
+  border-radius: 14px;
+  background: var(--auction-bg-surface);
+  border: 1px solid var(--auction-border);
+  overflow: hidden;
+  transition: box-shadow 250ms ease;
+
+  &--active {
+    box-shadow: var(--auction-shadow-glow-accent);
+    border-color: var(--auction-accent);
+  }
+
+  &__header {
+    display: grid;
+    grid-template-columns: 40px 1fr auto 16px;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+  }
+
+  &__crest {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--auction-bg-canvas);
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    color: var(--auction-text-primary);
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__owner,
+  &__captain {
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__budget {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 64px;
+  }
+
+  &__budget-value {
+    color: var(--auction-gold);
+    font-weight: 700;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__budget-meter {
+    width: 56px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--auction-bg-overlay);
+    overflow: hidden;
+  }
+
+  &__budget-fill {
+    height: 100%;
+    background: var(--auction-accent);
+    transition: width 300ms ease;
+  }
+
+  &__chevron {
+    color: var(--auction-text-secondary);
+    font-size: 20px;
+    transform: rotate(90deg);
+    transition: transform 250ms ease;
+
+    &--open {
+      transform: rotate(270deg);
+    }
+  }
+
+  &__field {
+    padding: 0 8px 12px;
+    animation: expand-in 280ms ease;
+  }
+}
+
+@keyframes expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .team-field-card {
+    &__header {
+      grid-template-columns: 48px 1fr auto 16px;
+      padding: 14px 16px;
+    }
+
+    &__crest {
+      width: 48px;
+      height: 48px;
+      font-size: 12px;
+    }
+
+    &__name {
+      font-size: 15px;
+    }
+  }
+}

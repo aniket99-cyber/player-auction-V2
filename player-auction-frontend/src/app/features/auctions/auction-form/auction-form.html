@@ -1,0 +1,63 @@
+<div class="auction-form">
+  <h1>New Auction</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="auction-form__form">
+    <mat-form-field appearance="outline">
+      <mat-label>Auction Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g. Reunion Cup 2026" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Auction name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Participating Teams</mat-label>
+      <mat-select formControlName="participatingTeams" multiple>
+        @for (team of teams(); track team.id) {
+          <mat-option [value]="team.id">{{ team.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.participatingTeams.hasError('required')) {
+        <mat-error>Select at least one team</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Player Pool</mat-label>
+      <mat-select formControlName="playerQueue" multiple>
+        @for (player of availablePlayers(); track player.id) {
+          <mat-option [value]="player.id">{{ player.name }} — {{ player.role }}</mat-option>
+        }
+      </mat-select>
+      @if (availablePlayers().length === 0) {
+        <mat-hint>No unassigned players available — register players first</mat-hint>
+      }
+      @if (form.controls.playerQueue.hasError('required')) {
+        <mat-error>Select at least one player</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="auction-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Selection Mode</mat-label>
+        <mat-select formControlName="selectionMode">
+          @for (mode of selectionModes; track mode) {
+            <mat-option [value]="mode">{{ mode }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Bid Timer (seconds)</mat-label>
+        <input matInput type="number" formControlName="bidTimerSeconds" />
+      </mat-form-field>
+    </div>
+
+    <div class="auction-form__actions">
+      <button mat-button type="button" routerLink="/auctions">Cancel</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+        Create Auction
+      </button>
+    </div>
+  </form>
+</div>

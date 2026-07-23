@@ -1,0 +1,40 @@
+<div class="team-field-card" [class.team-field-card--active]="isActive()">
+  <button class="team-field-card__header" (click)="toggleExpanded()">
+    <div class="team-field-card__crest" [style.background]="team().primaryColor">
+      @if (team().logoUrl) {
+        <img [src]="team().logoUrl" [alt]="team().name" />
+      } @else {
+        {{ team().shortName }}
+      }
+    </div>
+
+    <div class="team-field-card__info">
+      <span class="team-field-card__name">{{ team().name }}</span>
+      @if (team().ownerName) {
+        <span class="team-field-card__owner">Owner: {{ team().ownerName }}</span>
+      }
+      @if (captainName(); as name) {
+        <span class="team-field-card__captain">Captain: {{ name }}</span>
+      }
+    </div>
+
+    <div class="team-field-card__budget">
+      <span class="team-field-card__budget-value">{{ team().remainingBudget }}</span>
+      <div class="team-field-card__budget-meter">
+        <div class="team-field-card__budget-fill" [style.width.%]="budgetUsedPercent()"></div>
+      </div>
+    </div>
+
+    <span class="team-field-card__chevron" [class.team-field-card__chevron--open]="isExpanded()">›</span>
+  </button>
+
+  @if (isExpanded()) {
+    <div class="team-field-card__field">
+      <app-formation-view
+        [players]="roster()"
+        [primaryColor]="team().primaryColor"
+        [captainId]="team().captain"
+      />
+    </div>
+  }
+</div>

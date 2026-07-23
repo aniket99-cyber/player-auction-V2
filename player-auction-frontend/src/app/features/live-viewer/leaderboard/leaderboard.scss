@@ -1,0 +1,134 @@
+// Mobile-first: base styles target small screens; enhanced at wider breakpoints.
+.leaderboard {
+  background: var(--auction-glass-fill);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--auction-glass-border);
+  border-radius: 14px;
+  padding: 12px;
+
+  &__title {
+    color: var(--auction-text-primary);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 10px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 20px 32px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 10px;
+    background: var(--auction-bg-surface);
+    animation: row-in 300ms ease;
+    transition: box-shadow 250ms ease, background 250ms ease;
+
+    &--active {
+      box-shadow: var(--auction-shadow-glow-accent);
+      background: var(--auction-bg-surface-raised);
+    }
+
+    &--top {
+      border: 1px solid var(--auction-gold);
+    }
+  }
+
+  &__rank {
+    color: var(--auction-text-secondary);
+    font-weight: 700;
+    font-size: 12px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__crest {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--auction-bg-canvas);
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    color: var(--auction-text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+  }
+
+  &__spent {
+    color: var(--auction-gold);
+    font-weight: 700;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .leaderboard {
+    padding: 16px;
+
+    &__row {
+      grid-template-columns: 24px 40px 1fr auto;
+      padding: 10px 12px;
+    }
+
+    &__crest {
+      width: 40px;
+      height: 40px;
+      font-size: 12px;
+    }
+
+    &__name {
+      font-size: 14px;
+    }
+
+    &__spent {
+      font-size: 16px;
+    }
+  }
+}

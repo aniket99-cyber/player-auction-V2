@@ -1,0 +1,56 @@
+<div class="live-viewer" #root>
+  <header class="live-viewer__header">
+    <span class="live-viewer__brand">⚽ Live Auction · Round {{ store.round() }}</span>
+    <span class="live-viewer__status">
+      <span class="live-viewer__status-dot" [class.live-viewer__status-dot--live]="connected()"></span>
+      {{ connected() ? 'Live' : 'Connecting...' }}
+    </span>
+  </header>
+
+  @if (store.isAwaitingNextRound()) {
+    <section class="live-viewer__section live-viewer__round-banner">
+      <span>Round {{ store.round() }} complete — waiting for the admin to start the next round.</span>
+    </section>
+  }
+
+  <section class="live-viewer__section live-viewer__stage">
+    <app-player-stage
+      [player]="store.currentPlayer()"
+      [isRevealing]="store.isRevealing()"
+      (revealSettled)="store.settleReveal()"
+    />
+
+    <div class="live-viewer__current-bid">
+      <span class="live-viewer__current-bid-label">Current Bid</span>
+      <span class="live-viewer__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
+    </div>
+
+    @if (store.isBiddingOpen()) {
+      <app-countdown-ring [secondsRemaining]="store.secondsRemaining()" [totalSeconds]="store.bidTimerSeconds()" />
+    }
+  </section>
+
+  <section class="live-viewer__section">
+    <app-auction-progress
+      [remainingInPool]="viewerStore.remainingInPool()"
+      [soldThisSession]="viewerStore.soldThisSession()"
+      [unsoldThisSession]="viewerStore.unsoldThisSession()"
+    />
+  </section>
+
+  <section class="live-viewer__section">
+    <app-leaderboard [teams]="store.teams()" [highlightedTeamId]="null" />
+  </section>
+
+  <section class="live-viewer__section">
+    <app-teams-panel [teams]="store.teams()" [roster]="viewerStore.roster()" [activeTeamId]="null" />
+  </section>
+
+  <section class="live-viewer__section">
+    <app-latest-activity [entries]="viewerStore.activity()" [teams]="store.teams()" />
+  </section>
+
+  <section class="live-viewer__section">
+    <app-statistics [teams]="store.teams()" [roster]="viewerStore.roster()" />
+  </section>
+</div>

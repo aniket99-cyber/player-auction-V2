@@ -7,7 +7,14 @@
         <span class="formation__row-label">{{ row.label }}</span>
         <div class="formation__row-players">
           @for (player of row.players; track player.id) {
-            <div class="formation__chip" [style.borderColor]="primaryColor()">
+            <div
+              class="formation__chip"
+              [class.formation__chip--captain]="player.id === captainId()"
+              [style.borderColor]="primaryColor()"
+            >
+              @if (player.id === captainId()) {
+                <span class="formation__chip-badge">C</span>
+              }
               @if (player.imageUrl) {
                 <img [src]="player.imageUrl" [alt]="player.name" />
               } @else {

@@ -5,6 +5,7 @@ import { TeamImportService } from '@services/team-import.service';
 import { TeamRepository } from '@repositories/implementations/TeamRepository';
 import { PlayerRepository } from '@repositories/implementations/PlayerRepository';
 import { AuditLogRepository } from '@repositories/implementations/AuditLogRepository';
+import { UserRepository } from '@repositories/implementations/UserRepository';
 import { validate } from '@middleware/validate.middleware';
 import { authenticate, authorize } from '@middleware/auth.middleware';
 import { uploadImage, uploadImportFile } from '@middleware/upload.middleware';
@@ -22,16 +23,20 @@ const router = Router();
 const teamRepository = new TeamRepository();
 const teamService = new TeamService(teamRepository, new PlayerRepository(), new AuditLogRepository());
 const teamImportService = new TeamImportService(teamRepository, new AuditLogRepository());
-const teamController = new TeamController(teamService, teamImportService, teamRepository);
-
-router.use(authenticate);
+const teamController = new TeamController(
+  teamService,
+  teamImportService,
+  teamRepository,
+  new UserRepository(),
+);
 
 // Static/action sub-paths must be registered before the generic '/:id' route
 // so Express doesn't try to parse them as an ObjectId.
-router.get('/deleted', authorize(UserRole.ADMIN), asyncHandler(teamController.listDeleted));
+router.get('/deleted', authenticate, authorize(UserRole.ADMIN), asyncHandler(teamController.listDeleted));
 
 router.post(
   '/import/csv',
+  authenticate,
   authorize(UserRole.ADMIN),
   uploadImportFile.single('file'),
   asyncHandler(teamController.importCsv),
@@ -39,6 +44,7 @@ router.post(
 
 router.post(
   '/import/excel',
+  authenticate,
   authorize(UserRole.ADMIN),
   uploadImportFile.single('file'),
   asyncHandler(teamController.importExcel),
@@ -46,27 +52,38 @@ router.post(
 
 router.patch(
   '/bulk-status',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(bulkStatusSchema),
   asyncHandler(teamController.bulkUpdateStatus),
 );
 
+// Public reads: the Live Viewer needs the team list (leaderboard, budgets,
+// crests) with no login. Every mutating route below stays behind `authenticate`.
 router.get('/', asyncHandler(teamController.list));
-router.post('/', authorize(UserRole.ADMIN), validate(createTeamSchema), asyncHandler(teamController.create));
+router.post(
+  '/',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  validate(createTeamSchema),
+  asyncHandler(teamController.create),
+);
 
 router.get('/:id', asyncHandler(teamController.getById));
 router.patch(
   '/:id',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(updateTeamSchema),
   asyncHandler(teamController.update),
 );
-router.delete('/:id', authorize(UserRole.ADMIN), asyncHandler(teamController.softDelete));
+router.delete('/:id', authenticate, authorize(UserRole.ADMIN), asyncHandler(teamController.softDelete));
 
-router.post('/:id/restore', authorize(UserRole.ADMIN), asyncHandler(teamController.restore));
+router.post('/:id/restore', authenticate, authorize(UserRole.ADMIN), asyncHandler(teamController.restore));
 
 router.post(
   '/:id/logo',
+  authenticate,
   authorize(UserRole.ADMIN),
   uploadImage.single('logo'),
   asyncHandler(teamController.uploadLogo),
@@ -74,11 +91,17 @@ router.post(
 
 router.post(
   '/:id/retentions',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(addRetentionSchema),
   asyncHandler(teamController.addRetention),
 );
 
-router.get('/:id/audit-history', authorize(UserRole.ADMIN), asyncHandler(teamController.auditHistory));
+router.get(
+  '/:id/audit-history',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  asyncHandler(teamController.auditHistory),
+);
 
 export const teamRoutes = router;

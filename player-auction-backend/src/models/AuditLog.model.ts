@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from 'mongoose';
+import { idTransformOptions } from '@models/schema-options';
 
 export interface IAuditLog extends Document {
   _id: Types.ObjectId;
@@ -20,7 +21,7 @@ const auditLogSchema = new Schema<IAuditLog>(
     before: { type: Schema.Types.Mixed },
     after: { type: Schema.Types.Mixed },
   },
-  { timestamps: { createdAt: true, updatedAt: false } },
+  { timestamps: { createdAt: true, updatedAt: false }, ...idTransformOptions },
 );
 
 auditLogSchema.index({ entityType: 1, entityId: 1, createdAt: -1 });

@@ -4,11 +4,9 @@ import { PlayerAuctionStatus, PlayerRole } from '@constants/enums';
 const objectId = Joi.string().hex().length(24);
 
 const statsSchema = Joi.object({
-  matches: Joi.number().min(0).optional(),
-  runs: Joi.number().min(0).optional(),
-  wickets: Joi.number().min(0).optional(),
-  average: Joi.number().min(0).optional(),
-  strikeRate: Joi.number().min(0).optional(),
+  appearances: Joi.number().min(0).optional(),
+  goals: Joi.number().min(0).optional(),
+  assists: Joi.number().min(0).optional(),
 });
 
 export const createPlayerSchema = Joi.object({
@@ -18,6 +16,8 @@ export const createPlayerSchema = Joi.object({
     .required(),
   country: Joi.string().trim().min(2).max(60).required(),
   age: Joi.number().integer().min(14).max(60).optional(),
+  passingYear: Joi.number().integer().min(1950).max(2100).optional(),
+  previousTeam: Joi.string().trim().max(100).optional(),
   basePrice: Joi.number().min(0).required(),
   imageUrl: Joi.string().uri().optional(),
   stats: statsSchema.optional(),
@@ -30,6 +30,8 @@ export const updatePlayerSchema = Joi.object({
     .optional(),
   country: Joi.string().trim().min(2).max(60).optional(),
   age: Joi.number().integer().min(14).max(60).optional(),
+  passingYear: Joi.number().integer().min(1950).max(2100).optional(),
+  previousTeam: Joi.string().trim().max(100).optional(),
   basePrice: Joi.number().min(0).optional(),
   imageUrl: Joi.string().uri().optional(),
   stats: statsSchema.optional(),

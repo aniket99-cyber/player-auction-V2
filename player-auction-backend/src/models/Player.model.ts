@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types, Query } from 'mongoose';
+import { idTransformOptions } from '@models/schema-options';
 import { PlayerAuctionStatus, PlayerRole } from '@constants/enums';
 
 export interface IPlayer extends Document {
@@ -7,14 +8,14 @@ export interface IPlayer extends Document {
   role: PlayerRole;
   country: string;
   age?: number;
+  passingYear?: number;
+  previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
   stats: {
-    matches: number;
-    runs?: number;
-    wickets?: number;
-    average?: number;
-    strikeRate?: number;
+    appearances: number;
+    goals?: number;
+    assists?: number;
   };
   auctionStatus: PlayerAuctionStatus;
   isRetained: boolean;
@@ -33,14 +34,14 @@ const playerSchema = new Schema<IPlayer>(
     role: { type: String, enum: Object.values(PlayerRole), required: true },
     country: { type: String, required: true, trim: true },
     age: { type: Number, min: 14, max: 60 },
+    passingYear: { type: Number, min: 1950, max: 2100 },
+    previousTeam: { type: String, trim: true },
     basePrice: { type: Number, required: true, min: 0 },
     imageUrl: { type: String },
     stats: {
-      matches: { type: Number, default: 0 },
-      runs: { type: Number },
-      wickets: { type: Number },
-      average: { type: Number },
-      strikeRate: { type: Number },
+      appearances: { type: Number, default: 0 },
+      goals: { type: Number },
+      assists: { type: Number },
     },
     auctionStatus: {
       type: String,
@@ -54,7 +55,7 @@ const playerSchema = new Schema<IPlayer>(
     deletedAt: { type: Date },
     deletedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true },
+  { timestamps: true, ...idTransformOptions },
 );
 
 playerSchema.index({ auctionStatus: 1 });
@@ -62,6 +63,7 @@ playerSchema.index({ role: 1 });
 playerSchema.index({ country: 1 });
 playerSchema.index({ basePrice: 1 });
 playerSchema.index({ isDeleted: 1 });
+playerSchema.index({ passingYear: 1 });
 playerSchema.index({ name: 'text', country: 'text' });
 
 // Soft-delete convention: mirrors Team.model.ts — every normal find is

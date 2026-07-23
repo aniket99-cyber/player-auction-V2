@@ -12,6 +12,13 @@ export const routes: Routes = [
     ],
   },
   {
+    // Public Live Viewer — deliberately outside the guarded shell and the
+    // authGuard: anyone with the link can watch, no account required.
+    path: 'watch/:auctionId',
+    loadComponent: () =>
+      import('./features/live-viewer/live-viewer/live-viewer').then((m) => m.LiveViewer),
+  },
+  {
     path: '',
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
     canActivate: [authGuard],
@@ -32,6 +39,37 @@ export const routes: Routes = [
           import('./features/players/player-list/player-list').then((m) => m.PlayerList),
       },
       {
+        path: 'players/deleted',
+        loadComponent: () =>
+          import('./shared/components/deleted-records-view/deleted-records-view').then(
+            (m) => m.DeletedRecordsView,
+          ),
+        data: { entityType: 'player', backPath: '/players', entityLabel: 'Players' },
+      },
+      {
+        path: 'players/new',
+        loadComponent: () =>
+          import('./features/players/player-form/player-form').then((m) => m.PlayerForm),
+      },
+      {
+        path: 'players/:id',
+        loadComponent: () =>
+          import('./features/players/player-detail/player-detail').then((m) => m.PlayerDetail),
+      },
+      {
+        path: 'players/:id/edit',
+        loadComponent: () =>
+          import('./features/players/player-form/player-form').then((m) => m.PlayerForm),
+      },
+      {
+        path: 'players/:id/audit-history',
+        loadComponent: () =>
+          import('./shared/components/audit-history-view/audit-history-view').then(
+            (m) => m.AuditHistoryView,
+          ),
+        data: { entityType: 'player', backPath: '/players' },
+      },
+      {
         path: 'teams',
         loadComponent: () =>
           import('./features/teams/team-list/team-list').then((m) => m.TeamList),
@@ -39,7 +77,10 @@ export const routes: Routes = [
       {
         path: 'teams/deleted',
         loadComponent: () =>
-          import('./features/teams/deleted-teams/deleted-teams').then((m) => m.DeletedTeams),
+          import('./shared/components/deleted-records-view/deleted-records-view').then(
+            (m) => m.DeletedRecordsView,
+          ),
+        data: { entityType: 'team', backPath: '/teams', entityLabel: 'Teams' },
       },
       {
         path: 'teams/new',
@@ -57,14 +98,52 @@ export const routes: Routes = [
       {
         path: 'teams/:id/audit-history',
         loadComponent: () =>
-          import('./features/teams/team-audit-history/team-audit-history').then(
-            (m) => m.TeamAuditHistory,
+          import('./shared/components/audit-history-view/audit-history-view').then(
+            (m) => m.AuditHistoryView,
           ),
+        data: { entityType: 'team', backPath: '/teams' },
       },
       {
         path: 'auction-room/:auctionId',
         loadComponent: () =>
           import('./features/auction-room/auction-room/auction-room').then((m) => m.AuctionRoom),
+      },
+      {
+        path: 'auctions',
+        loadComponent: () =>
+          import('./features/auctions/auction-list/auction-list').then((m) => m.AuctionList),
+      },
+      {
+        path: 'auctions/new',
+        loadComponent: () =>
+          import('./features/auctions/auction-form/auction-form').then((m) => m.AuctionForm),
+      },
+      {
+        path: 'owners',
+        loadComponent: () => import('./features/owners/owner-list/owner-list').then((m) => m.OwnerList),
+      },
+      {
+        path: 'owners/new',
+        loadComponent: () => import('./features/owners/owner-form/owner-form').then((m) => m.OwnerForm),
+      },
+      {
+        path: 'owners/:id/edit',
+        loadComponent: () => import('./features/owners/owner-form/owner-form').then((m) => m.OwnerForm),
+      },
+      {
+        path: 'captains',
+        loadComponent: () =>
+          import('./features/captains/captain-list/captain-list').then((m) => m.CaptainList),
+      },
+      {
+        path: 'captains/new',
+        loadComponent: () =>
+          import('./features/captains/captain-form/captain-form').then((m) => m.CaptainForm),
+      },
+      {
+        path: 'captains/:id/edit',
+        loadComponent: () =>
+          import('./features/captains/captain-form/captain-form').then((m) => m.CaptainForm),
       },
     ],
   },

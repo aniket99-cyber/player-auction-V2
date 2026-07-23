@@ -35,6 +35,30 @@
     align-items: center;
     gap: 6px;
     width: 76px;
+    position: relative;
+
+    &--captain img,
+    &--captain .formation__chip-initial {
+      border-color: var(--auction-gold);
+      box-shadow: var(--auction-shadow-glow-gold);
+    }
+  }
+
+  &__chip-badge {
+    position: absolute;
+    top: -4px;
+    right: 12px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--auction-gold);
+    color: var(--auction-bg-canvas);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
   }
 
   &__chip img,

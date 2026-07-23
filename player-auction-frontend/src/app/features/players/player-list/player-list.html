@@ -127,6 +127,12 @@
                 <mat-icon>edit</mat-icon>
                 <span>Edit</span>
               </button>
+              @if (player.auctionStatus === 'PENDING') {
+                <button mat-menu-item (click)="retainPlayer(player)">
+                  <mat-icon>verified</mat-icon>
+                  <span>Retain to Team</span>
+                </button>
+              }
               <button mat-menu-item (click)="deletePlayer(player)">
                 <mat-icon>delete</mat-icon>
                 <span>Delete</span>

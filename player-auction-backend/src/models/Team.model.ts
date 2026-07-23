@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types, Query } from 'mongoose';
+import { idTransformOptions } from '@models/schema-options';
 
 export interface IRetentionEntry {
   player: Types.ObjectId;
@@ -76,7 +77,7 @@ const teamSchema = new Schema<ITeam>(
     deletedAt: { type: Date },
     deletedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true },
+  { timestamps: true, ...idTransformOptions },
 );
 
 // Unique per season, not globally — the same franchise name can recur next season

@@ -1,0 +1,15 @@
+.teams-panel {
+  &__title {
+    color: var(--auction-text-primary);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 10px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}

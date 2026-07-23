@@ -1,0 +1,43 @@
+<div class="captain-list">
+  <div class="captain-list__header">
+    <h1>Captains</h1>
+    <button mat-flat-button color="primary" (click)="create()">
+      <mat-icon>add</mat-icon>
+      Assign Captain
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <p class="captain-list__loading">Loading...</p>
+  } @else if (captainsWithDetails().length === 0) {
+    <p class="captain-list__empty">No captains assigned yet.</p>
+  } @else {
+    <div class="captain-list__grid">
+      @for (entry of captainsWithDetails(); track entry.captain.id) {
+        <div class="captain-list__card">
+          <div class="captain-list__photo">
+            @if (entry.player?.imageUrl) {
+              <img [src]="entry.player?.imageUrl" [alt]="entry.player?.name" />
+            } @else {
+              <mat-icon>person</mat-icon>
+            }
+          </div>
+          <span class="captain-list__name">{{ entry.player?.name ?? 'Unknown player' }}</span>
+          <span class="captain-list__position">{{ entry.player?.role }}</span>
+          @if (entry.player?.passingYear) {
+            <span class="captain-list__year">Batch of {{ entry.player?.passingYear }}</span>
+          }
+          <span class="captain-list__team">{{ entry.team?.name ?? 'Unknown team' }}</span>
+          <div class="captain-list__actions">
+            <button mat-icon-button (click)="edit(entry.captain)" aria-label="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="delete(entry.captain)" aria-label="Remove">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

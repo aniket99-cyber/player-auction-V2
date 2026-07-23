@@ -1,0 +1,86 @@
+.player-form {
+  max-width: 640px;
+
+  h1 {
+    color: var(--auction-text-primary);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 24px;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__section-title {
+    color: var(--auction-text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 16px 0 4px;
+  }
+
+  &__image-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  &__image-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--auction-border);
+    background: var(--auction-bg-overlay);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    mat-icon {
+      color: var(--auction-text-secondary);
+    }
+  }
+
+  &__image-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--auction-border);
+    border-radius: 8px;
+    color: var(--auction-text-primary);
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover {
+      background: var(--auction-bg-overlay);
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}

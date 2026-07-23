@@ -23,11 +23,15 @@ export class TeamService {
   private readonly authService = inject(AuthService);
 
   list(query: TeamListQuery): Observable<PaginatedResult<Team>> {
-    return this.api.get<PaginatedResult<Team>>('/teams', { ...query });
+    return this.api.get<PaginatedResult<Team>>('/teams', { ...query, ids: query.ids?.join(',') });
   }
 
   getById(id: string): Observable<Team> {
     return this.api.get<Team>(`/teams/${id}`);
+  }
+
+  getByIds(ids: string[]): Observable<PaginatedResult<Team>> {
+    return this.list({ ids, limit: ids.length || 1 });
   }
 
   create(payload: CreateTeamRequest): Observable<Team> {

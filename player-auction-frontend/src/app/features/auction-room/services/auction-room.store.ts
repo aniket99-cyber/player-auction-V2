@@ -1,0 +1,146 @@
+import { Injectable, computed, signal } from '@angular/core';
+import { Auction, AuctionPlayerState, AuctionStatus, BidIncrementRule, Player, Team } from '../../../core/models';
+
+@Injectable({ providedIn: 'root' })
+export class AuctionRoomStore {
+  readonly auctionId = signal<string | null>(null);
+  readonly auctionStatus = signal<AuctionStatus | null>(null);
+  readonly playerState = signal<AuctionPlayerState | null>(null);
+  readonly bidIncrementRules = signal<BidIncrementRule[]>([]);
+  readonly bidTimerSeconds = signal<number>(15);
+  readonly participatingTeamIds = signal<string[]>([]);
+
+  readonly currentPlayer = signal<Player | null>(null);
+  readonly currentBid = signal<{ amount: number } | null>(null);
+  readonly secondsRemaining = signal<number>(0);
+  readonly teams = signal<Team[]>([]);
+  readonly lastRejection = signal<{ message: string } | null>(null);
+  readonly isRevealing = signal(false); // true during the wheel-spin window
+  readonly round = signal(1);
+  readonly awaitingNextRoundUnsoldCount = signal(0);
+
+  readonly isLive = computed(() => this.auctionStatus() === AuctionStatus.LIVE);
+  readonly isPaused = computed(() => this.auctionStatus() === AuctionStatus.PAUSED);
+  readonly isCompleted = computed(() => this.auctionStatus() === AuctionStatus.COMPLETED);
+  readonly isBiddingOpen = computed(
+    () => this.isLive() && this.playerState() === AuctionPlayerState.IN_BIDDING,
+  );
+  readonly isFinalizing = computed(() => this.playerState() === AuctionPlayerState.FINALIZING);
+  readonly isAwaitingNextRound = computed(
+    () => this.playerState() === AuctionPlayerState.AWAITING_NEXT_ROUND,
+  );
+
+  readonly nextValidBidAmount = computed(() => {
+    const player = this.currentPlayer();
+    if (!player) return 0;
+
+    const bid = this.currentBid();
+    if (!bid) return player.basePrice;
+
+    const rules = [...this.bidIncrementRules()].sort((a, b) => a.upTo - b.upTo);
+    const rule = rules.find((r) => bid.amount < r.upTo);
+    const increment = rule ? rule.increment : (rules[rules.length - 1]?.increment ?? 1);
+    return bid.amount + increment;
+  });
+
+  loadFromAuction(auction: Auction, currentPlayer: Player | null, teams: Team[]): void {
+    this.auctionId.set(auction.id);
+    this.auctionStatus.set(auction.status);
+    this.playerState.set(auction.playerState ?? null);
+    this.bidIncrementRules.set(auction.bidIncrementRules);
+    this.bidTimerSeconds.set(auction.settings.bidTimerSeconds);
+    this.participatingTeamIds.set(auction.participatingTeams);
+    this.currentPlayer.set(currentPlayer);
+    this.currentBid.set(auction.currentBid ?? null);
+    this.teams.set(teams);
+    this.round.set(auction.round);
+    this.awaitingNextRoundUnsoldCount.set(auction.unsoldThisRound.length);
+  }
+
+  setPlayerSelected(player: Player): void {
+    this.currentPlayer.set(player);
+    this.currentBid.set(null);
+    this.secondsRemaining.set(0);
+    this.playerState.set(AuctionPlayerState.SELECTING);
+    this.isRevealing.set(true);
+  }
+
+  settleReveal(): void {
+    this.isRevealing.set(false);
+    this.playerState.set(AuctionPlayerState.IN_BIDDING);
+  }
+
+  applyBidBumped(amount: number): void {
+    this.currentBid.set({ amount });
+    this.lastRejection.set(null);
+  }
+
+  applyBidRejected(message: string): void {
+    this.lastRejection.set({ message });
+  }
+
+  applyBidUndone(amount: number | null): void {
+    this.currentBid.set(amount === null ? null : { amount });
+  }
+
+  applyTimerTick(secondsRemaining: number): void {
+    this.secondsRemaining.set(secondsRemaining);
+  }
+
+  applyEnteredFinalizing(): void {
+    this.playerState.set(AuctionPlayerState.FINALIZING);
+    this.secondsRemaining.set(0);
+  }
+
+  applyTeamBudgetUpdated(teamId: string, remainingBudget: number): void {
+    this.teams.update((teams) =>
+      teams.map((t) => (t.id === teamId ? { ...t, remainingBudget } : t)),
+    );
+  }
+
+  addPlayerToTeam(teamId: string, playerId: string): void {
+    this.teams.update((teams) =>
+      teams.map((t) =>
+        t.id === teamId && !t.players.includes(playerId)
+          ? { ...t, players: [...t.players, playerId] }
+          : t,
+      ),
+    );
+  }
+
+  applyPlayerSettled(): void {
+    this.currentPlayer.set(null);
+    this.currentBid.set(null);
+    this.playerState.set(null);
+    this.secondsRemaining.set(0);
+  }
+
+  setStatus(status: AuctionStatus): void {
+    this.auctionStatus.set(status);
+  }
+
+  applyAwaitingNextRound(round: number, unsoldCount: number): void {
+    this.playerState.set(AuctionPlayerState.AWAITING_NEXT_ROUND);
+    this.round.set(round);
+    this.awaitingNextRoundUnsoldCount.set(unsoldCount);
+  }
+
+  applyRoundStarted(round: number): void {
+    this.round.set(round);
+    this.awaitingNextRoundUnsoldCount.set(0);
+  }
+
+  reset(): void {
+    this.auctionId.set(null);
+    this.auctionStatus.set(null);
+    this.playerState.set(null);
+    this.currentPlayer.set(null);
+    this.currentBid.set(null);
+    this.secondsRemaining.set(0);
+    this.teams.set([]);
+    this.lastRejection.set(null);
+    this.isRevealing.set(false);
+    this.round.set(1);
+    this.awaitingNextRoundUnsoldCount.set(0);
+  }
+}

@@ -13,11 +13,11 @@ interface ImportRow {
   country: string;
   basePrice: number;
   age?: number;
-  matches?: number;
-  runs?: number;
-  wickets?: number;
-  average?: number;
-  strikeRate?: number;
+  passingYear?: number;
+  previousTeam?: string;
+  appearances?: number;
+  goals?: number;
+  assists?: number;
 }
 
 interface RowError {
@@ -89,15 +89,15 @@ export class PlayerImportService {
       role: row.role,
       country: row.country,
       age: row.age,
+      passingYear: row.passingYear,
+      previousTeam: row.previousTeam,
       basePrice: row.basePrice,
       auctionStatus: PlayerAuctionStatus.PENDING,
       isRetained: false,
       stats: {
-        matches: row.matches ?? 0,
-        runs: row.runs,
-        wickets: row.wickets,
-        average: row.average,
-        strikeRate: row.strikeRate,
+        appearances: row.appearances ?? 0,
+        goals: row.goals,
+        assists: row.assists,
       },
     }));
 
@@ -153,7 +153,15 @@ export class PlayerImportService {
         rowErrors.push(`age must be between 14 and 60, got "${record.age}"`);
       }
 
-      const numericFields: Array<keyof ImportRow> = ['matches', 'runs', 'wickets', 'average', 'strikeRate'];
+      const passingYear = record.passingYear ? Number(record.passingYear) : undefined;
+      if (
+        record.passingYear &&
+        (Number.isNaN(passingYear) || (passingYear as number) < 1950 || (passingYear as number) > 2100)
+      ) {
+        rowErrors.push(`passingYear must be between 1950 and 2100, got "${record.passingYear}"`);
+      }
+
+      const numericFields: Array<keyof ImportRow> = ['appearances', 'goals', 'assists'];
       const numericValues: Partial<Record<string, number>> = {};
       for (const field of numericFields) {
         const raw = record[field as string];
@@ -179,11 +187,11 @@ export class PlayerImportService {
         country: record.country.trim(),
         basePrice,
         age,
-        matches: numericValues['matches'],
-        runs: numericValues['runs'],
-        wickets: numericValues['wickets'],
-        average: numericValues['average'],
-        strikeRate: numericValues['strikeRate'],
+        passingYear,
+        previousTeam: record.previousTeam?.trim() || undefined,
+        appearances: numericValues['appearances'],
+        goals: numericValues['goals'],
+        assists: numericValues['assists'],
       });
     });
 

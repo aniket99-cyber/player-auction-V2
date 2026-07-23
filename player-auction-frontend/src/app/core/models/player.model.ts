@@ -1,11 +1,9 @@
 import { PlayerAuctionStatus, PlayerRole } from './enums';
 
 export interface PlayerStats {
-  matches: number;
-  runs?: number;
-  wickets?: number;
-  average?: number;
-  strikeRate?: number;
+  appearances: number;
+  goals?: number;
+  assists?: number;
 }
 
 export interface Player {
@@ -14,6 +12,8 @@ export interface Player {
   role: PlayerRole;
   country: string;
   age?: number;
+  passingYear?: number;
+  previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
   stats: PlayerStats;
@@ -32,6 +32,8 @@ export interface CreatePlayerRequest {
   role: PlayerRole;
   country: string;
   age?: number;
+  passingYear?: number;
+  previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
   stats?: Partial<PlayerStats>;
@@ -42,6 +44,8 @@ export interface UpdatePlayerRequest {
   role?: PlayerRole;
   country?: string;
   age?: number;
+  passingYear?: number;
+  previousTeam?: string;
   basePrice?: number;
   imageUrl?: string;
   stats?: Partial<PlayerStats>;
@@ -56,6 +60,7 @@ export interface PlayerListQuery {
   auctionStatus?: string;
   minAge?: number;
   maxAge?: number;
+  passingYear?: number;
   minBasePrice?: number;
   maxBasePrice?: number;
   sortBy?: string;

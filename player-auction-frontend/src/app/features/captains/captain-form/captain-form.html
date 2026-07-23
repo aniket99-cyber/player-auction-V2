@@ -1,0 +1,39 @@
+<div class="captain-form">
+  <h1>{{ isEditMode() ? 'Change Captain' : 'Assign Captain' }}</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="captain-form__form">
+    <mat-form-field appearance="outline">
+      <mat-label>Team</mat-label>
+      <mat-select formControlName="team">
+        @for (team of teams(); track team.id) {
+          <mat-option [value]="team.id">{{ team.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.team.hasError('required')) {
+        <mat-error>Team is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Captain (from squad)</mat-label>
+      <mat-select formControlName="player">
+        @for (player of roster(); track player.id) {
+          <mat-option [value]="player.id">{{ player.name }} — {{ player.role }}</mat-option>
+        }
+      </mat-select>
+      @if (roster().length === 0) {
+        <mat-hint>Select a team with players on its roster first</mat-hint>
+      }
+      @if (form.controls.player.hasError('required')) {
+        <mat-error>Captain is required</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="captain-form__actions">
+      <button mat-button type="button" routerLink="/captains">Cancel</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+        {{ isEditMode() ? 'Save Changes' : 'Assign Captain' }}
+      </button>
+    </div>
+  </form>
+</div>

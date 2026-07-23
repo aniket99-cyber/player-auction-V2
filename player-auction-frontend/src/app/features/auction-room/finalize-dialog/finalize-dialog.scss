@@ -1,0 +1,32 @@
+.finalize-dialog {
+  &__amount {
+    font-size: 15px;
+  }
+
+  &__hint {
+    color: var(--auction-text-secondary);
+    font-size: 13px;
+  }
+
+  &__teams {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__team {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+
+    &--disabled {
+      opacity: 0.5;
+    }
+  }
+
+  &__insufficient {
+    color: var(--auction-danger);
+    font-size: 12px;
+  }
+}

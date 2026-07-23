@@ -1,0 +1,25 @@
+.bid-counter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+
+  &__bump,
+  &__finalize {
+    font-size: 16px;
+    padding: 10px 0;
+    height: auto;
+  }
+
+  &__spectator-note {
+    color: var(--auction-text-secondary);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  &__warning {
+    color: var(--auction-danger);
+    font-size: 12px;
+    text-align: center;
+  }
+}

@@ -1,0 +1,66 @@
+@if (player(); as p) {
+  <div class="player-detail">
+    <div class="player-detail__header">
+      <button mat-icon-button (click)="back()" aria-label="Back">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="player-detail__avatar">
+        @if (p.imageUrl) {
+          <img [src]="p.imageUrl" [alt]="p.name" />
+        } @else {
+          {{ p.name.charAt(0) }}
+        }
+      </div>
+      <div class="player-detail__title-block">
+        <h1>{{ p.name }}</h1>
+        <span class="player-detail__subtitle">
+          {{ p.role }} · {{ p.country }}
+          @if (p.age) {
+            · {{ p.age }} yrs
+          }
+        </span>
+        @if (p.passingYear || p.previousTeam) {
+          <span class="player-detail__subtitle">
+            @if (p.passingYear) {
+              Batch of {{ p.passingYear }}
+            }
+            @if (p.previousTeam) {
+              · Previously {{ p.previousTeam }}
+            }
+          </span>
+        }
+      </div>
+      <app-status-badge [status]="p.auctionStatus" />
+      <div class="player-detail__header-actions">
+        <button mat-button [routerLink]="['/players', p.id, 'edit']">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-button [routerLink]="['/players', p.id, 'audit-history']">
+          <mat-icon>history</mat-icon>
+          Audit History
+        </button>
+      </div>
+    </div>
+
+    <div class="player-detail__price-card">
+      <span class="player-detail__price-label">Base Price</span>
+      <span class="player-detail__price-value">{{ p.basePrice }}</span>
+      @if (p.auctionStatus === 'SOLD') {
+        <span class="player-detail__sold-price">Sold for {{ p.soldPrice }}</span>
+      }
+    </div>
+
+    <h2 class="player-detail__section-title">Statistics</h2>
+    <div class="player-detail__stat-grid">
+      @for (tile of statTiles(p); track tile.label) {
+        <div class="player-detail__stat-tile">
+          <span class="player-detail__stat-value">{{ tile.value }}</span>
+          <span class="player-detail__stat-label">{{ tile.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+} @else if (isLoading()) {
+  <p class="player-detail__loading">Loading player...</p>
+}

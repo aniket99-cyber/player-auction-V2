@@ -1,0 +1,11 @@
+.player-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+
+  &__empty {
+    color: var(--auction-text-secondary);
+    font-size: 15px;
+  }
+}

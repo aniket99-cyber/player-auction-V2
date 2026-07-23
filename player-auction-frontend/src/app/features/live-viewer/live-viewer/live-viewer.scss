@@ -1,0 +1,148 @@
+// Mobile-first: this is the primary viewing surface for most users, so the
+// base (unprefixed) rules target small screens; wider layouts are additive
+// enhancements behind min-width queries, never the default.
+.live-viewer {
+  min-height: 100vh;
+  background: var(--auction-bg-canvas);
+  color: var(--auction-text-primary);
+  padding: 12px;
+  padding-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--auction-bg-canvas);
+  }
+
+  &__brand {
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--auction-text-secondary);
+  }
+
+  &__status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--auction-danger);
+
+    &--live {
+      background: var(--auction-success);
+      box-shadow: 0 0 8px var(--auction-success);
+      animation: pulse-live 1.6s ease-in-out infinite;
+    }
+  }
+
+  &__section-title {
+    color: var(--auction-text-primary);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 10px;
+  }
+
+  &__stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 8px;
+    background: var(--auction-glass-fill);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid var(--auction-glass-border);
+    border-radius: 18px;
+  }
+
+  &__round-banner {
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(244, 185, 66, 0.12);
+    border: 1px solid var(--auction-gold);
+    color: var(--auction-text-primary);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  &__current-bid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__current-bid-label {
+    color: var(--auction-text-secondary);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &__current-bid-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    line-height: 1;
+    color: var(--auction-accent);
+    text-shadow: var(--auction-shadow-glow-accent);
+  }
+
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+// Tablet and up: current-bid value grows, still single column.
+@media (min-width: 600px) {
+  .live-viewer {
+    padding: 20px;
+
+    &__current-bid-value {
+      font-size: 52px;
+    }
+  }
+}
+
+// Desktop: two-column layout — stage/progress/leaderboard/history on the
+// left, teams/activity/statistics on the right.
+@media (min-width: 1024px) {
+  .live-viewer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'header header'
+      'stage teams'
+      'progress teams'
+      'leaderboard activity'
+      'history statistics';
+    align-content: start;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+
+    &__header { grid-area: header; }
+    &__stage { grid-area: stage; }
+  }
+
+  .live-viewer__section:nth-of-type(1) { grid-area: stage; }
+  .live-viewer__section:nth-of-type(2) { grid-area: progress; }
+  .live-viewer__section:nth-of-type(3) { grid-area: leaderboard; }
+  .live-viewer__section:nth-of-type(4) { grid-area: history; }
+  .live-viewer__section:nth-of-type(5) { grid-area: teams; }
+  .live-viewer__section:nth-of-type(6) { grid-area: activity; }
+  .live-viewer__section:nth-of-type(7) { grid-area: statistics; }
+}

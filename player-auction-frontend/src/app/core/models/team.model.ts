@@ -14,6 +14,7 @@ export interface Team {
   primaryColor: string;
   secondaryColor: string;
   owner: string;
+  ownerName?: string;
   captain?: string;
   totalBudget: number;
   remainingBudget: number;
@@ -60,6 +61,7 @@ export interface TeamListQuery {
   season?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  ids?: string[];
 }
 
 export interface PaginatedResult<T> {

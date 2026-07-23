@@ -1,12 +1,12 @@
 <mat-sidenav-container class="shell">
   <mat-sidenav mode="side" opened class="shell__sidenav">
     <div class="shell__brand">
-      <mat-icon>sports_cricket</mat-icon>
+      <mat-icon>sports_soccer</mat-icon>
       <span>Player Auction</span>
     </div>
 
     <mat-nav-list>
-      @for (item of navItems; track item.route) {
+      @for (item of navItems(); track item.route) {
         <a mat-list-item [routerLink]="item.route" routerLinkActive="shell__nav-item--active">
           <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
           <span matListItemTitle>{{ item.label }}</span>

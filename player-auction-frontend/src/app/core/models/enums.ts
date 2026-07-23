@@ -22,15 +22,20 @@ export enum PlayerAuctionStatus {
 }
 
 export enum PlayerRole {
-  BATSMAN = 'BATSMAN',
-  BOWLER = 'BOWLER',
-  ALL_ROUNDER = 'ALL_ROUNDER',
-  WICKET_KEEPER = 'WICKET_KEEPER',
+  GOALKEEPER = 'GOALKEEPER',
+  DEFENDER = 'DEFENDER',
+  MIDFIELDER = 'MIDFIELDER',
+  FORWARD = 'FORWARD',
 }
 
-export enum BidStatus {
-  ACTIVE = 'ACTIVE',
-  OUTBID = 'OUTBID',
-  WINNING = 'WINNING',
-  REJECTED = 'REJECTED',
+export enum AuctionSelectionMode {
+  SEQUENTIAL = 'SEQUENTIAL',
+  RANDOM = 'RANDOM',
+}
+
+export enum AuctionPlayerState {
+  SELECTING = 'SELECTING',
+  IN_BIDDING = 'IN_BIDDING',
+  FINALIZING = 'FINALIZING',
+  AWAITING_NEXT_ROUND = 'AWAITING_NEXT_ROUND',
 }

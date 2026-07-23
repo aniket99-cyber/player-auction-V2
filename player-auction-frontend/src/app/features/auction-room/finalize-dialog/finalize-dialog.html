@@ -1,0 +1,34 @@
+<h2 mat-dialog-title>Finalize "{{ data.player.name }}"</h2>
+
+<mat-dialog-content>
+  <p class="finalize-dialog__amount">
+    Winning bid: <strong>{{ data.currentBid?.amount ?? '—' }}</strong>
+  </p>
+
+  <p class="finalize-dialog__hint">Select the team that won the player, or mark the player unsold.</p>
+
+  <mat-radio-group class="finalize-dialog__teams" [value]="selectedTeamId()">
+    @for (team of data.teams; track team.id) {
+      <label class="finalize-dialog__team" [class.finalize-dialog__team--disabled]="!canAfford(team)">
+        <mat-radio-button [value]="team.id" [disabled]="!canAfford(team)" (change)="selectTeam(team.id)">
+          {{ team.name }} — {{ team.remainingBudget }} left
+        </mat-radio-button>
+        @if (!canAfford(team)) {
+          <span class="finalize-dialog__insufficient">Insufficient budget</span>
+        }
+      </label>
+    }
+  </mat-radio-group>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-stroked-button color="warn" type="button" (click)="markUnsold()">
+    <mat-icon>block</mat-icon>
+    Mark Unsold
+  </button>
+  <button mat-flat-button color="primary" type="button" [disabled]="!selectedTeamId()" (click)="confirmSale()">
+    <mat-icon>gavel</mat-icon>
+    Confirm Sale
+  </button>
+</mat-dialog-actions>

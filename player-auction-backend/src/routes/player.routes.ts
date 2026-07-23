@@ -23,14 +23,13 @@ const playerService = new PlayerService(playerRepository, new AuditLogRepository
 const playerImportService = new PlayerImportService(new AuditLogRepository());
 const playerController = new PlayerController(playerService, playerImportService, playerRepository);
 
-router.use(authenticate);
-
 // Static/action sub-paths must be registered before the generic '/:id' route
 // so Express doesn't try to parse them as an ObjectId.
-router.get('/deleted', authorize(UserRole.ADMIN), asyncHandler(playerController.listDeleted));
+router.get('/deleted', authenticate, authorize(UserRole.ADMIN), asyncHandler(playerController.listDeleted));
 
 router.post(
   '/import/csv',
+  authenticate,
   authorize(UserRole.ADMIN),
   uploadImportFile.single('file'),
   asyncHandler(playerController.importCsv),
@@ -38,6 +37,7 @@ router.post(
 
 router.post(
   '/import/excel',
+  authenticate,
   authorize(UserRole.ADMIN),
   uploadImportFile.single('file'),
   asyncHandler(playerController.importExcel),
@@ -45,6 +45,7 @@ router.post(
 
 router.patch(
   '/bulk-status',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(bulkStatusSchema),
   asyncHandler(playerController.bulkUpdateStatus),
@@ -52,14 +53,18 @@ router.patch(
 
 router.patch(
   '/bulk-auction-status',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(bulkAuctionStatusSchema),
   asyncHandler(playerController.bulkUpdateAuctionStatus),
 );
 
+// Public reads: the Live Viewer needs player details (name, photo, stats)
+// with no login. Every mutating route below stays behind `authenticate`.
 router.get('/', asyncHandler(playerController.list));
 router.post(
   '/',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(createPlayerSchema),
   asyncHandler(playerController.create),
@@ -68,16 +73,18 @@ router.post(
 router.get('/:id', asyncHandler(playerController.getById));
 router.patch(
   '/:id',
+  authenticate,
   authorize(UserRole.ADMIN),
   validate(updatePlayerSchema),
   asyncHandler(playerController.update),
 );
-router.delete('/:id', authorize(UserRole.ADMIN), asyncHandler(playerController.softDelete));
+router.delete('/:id', authenticate, authorize(UserRole.ADMIN), asyncHandler(playerController.softDelete));
 
-router.post('/:id/restore', authorize(UserRole.ADMIN), asyncHandler(playerController.restore));
+router.post('/:id/restore', authenticate, authorize(UserRole.ADMIN), asyncHandler(playerController.restore));
 
 router.post(
   '/:id/image',
+  authenticate,
   authorize(UserRole.ADMIN),
   uploadImage.single('image'),
   asyncHandler(playerController.uploadImage),
@@ -85,6 +92,7 @@ router.post(
 
 router.get(
   '/:id/audit-history',
+  authenticate,
   authorize(UserRole.ADMIN),
   asyncHandler(playerController.auditHistory),
 );

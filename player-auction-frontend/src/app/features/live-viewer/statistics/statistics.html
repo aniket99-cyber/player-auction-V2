@@ -1,0 +1,27 @@
+<div class="statistics">
+  <div class="statistics__panel">
+    <h3 class="statistics__title">Team Spend</h3>
+    <apx-chart
+      [series]="teamSpendChart().series"
+      [chart]="teamSpendChart().chart"
+      [xaxis]="teamSpendChart().xaxis"
+      [dataLabels]="teamSpendChart().dataLabels"
+      [stroke]="teamSpendChart().stroke"
+      [grid]="teamSpendChart().grid"
+      [colors]="teamSpendChart().colors"
+    />
+  </div>
+
+  <div class="statistics__panel">
+    <h3 class="statistics__title">Role Distribution</h3>
+    <apx-chart
+      [series]="roleDistributionChart().series"
+      [chart]="roleDistributionChart().chart"
+      [xaxis]="roleDistributionChart().xaxis"
+      [dataLabels]="roleDistributionChart().dataLabels"
+      [stroke]="roleDistributionChart().stroke"
+      [grid]="roleDistributionChart().grid"
+      [colors]="roleDistributionChart().colors"
+    />
+  </div>
+</div>

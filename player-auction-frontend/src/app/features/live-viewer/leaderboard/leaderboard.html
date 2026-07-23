@@ -1,0 +1,26 @@
+<div class="leaderboard">
+  <h3 class="leaderboard__title">Leaderboard</h3>
+  <div class="leaderboard__list">
+    @for (team of ranked(); track team.id) {
+      <div
+        class="leaderboard__row"
+        [class.leaderboard__row--active]="team.id === highlightedTeamId()"
+        [class.leaderboard__row--top]="team.rank === 1"
+      >
+        <span class="leaderboard__rank">{{ team.rank }}</span>
+        <div class="leaderboard__crest" [style.background]="team.primaryColor">
+          @if (team.logoUrl) {
+            <img [src]="team.logoUrl" [alt]="team.name" />
+          } @else {
+            {{ team.shortName }}
+          }
+        </div>
+        <div class="leaderboard__info">
+          <span class="leaderboard__name">{{ team.name }}</span>
+          <span class="leaderboard__meta">{{ team.players.length }} players</span>
+        </div>
+        <span class="leaderboard__spent">{{ team.spent }}</span>
+      </div>
+    }
+  </div>
+</div>

@@ -1,12 +1,60 @@
-<div class="auction-room">
+<div class="auction-room" [class.auction-room--sold-flash]="soldFlash()">
   <div class="auction-room__status">
     <span class="status-dot" [class.status-dot--live]="connected()"></span>
     {{ connected() ? 'Connected' : 'Connecting...' }}
+    <span class="auction-room__round-badge">Round {{ store.round() }}</span>
+    @if (store.isPaused()) {
+      <span class="auction-room__paused-badge">Paused</span>
+    }
   </div>
 
-  @if (latestBid(); as bid) {
-    <div class="auction-room__latest-bid">
-      Latest bid: <strong>{{ bid.amount }}</strong>
+  <div class="auction-room__stage">
+    <app-player-stage
+      [player]="store.currentPlayer()"
+      [isRevealing]="store.isRevealing()"
+      (revealSettled)="onRevealSettled()"
+    />
+  </div>
+
+  <div class="auction-room__bid-section">
+    <div class="auction-room__current-bid">
+      <span class="auction-room__current-bid-label">Current Bid</span>
+      <span class="auction-room__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
     </div>
+
+    @if (store.isBiddingOpen()) {
+      <app-countdown-ring
+        [secondsRemaining]="store.secondsRemaining()"
+        [totalSeconds]="store.bidTimerSeconds()"
+      />
+    }
+  </div>
+
+  <app-bid-counter
+    [isAdmin]="isAdmin()"
+    [nextValidBidAmount]="store.nextValidBidAmount()"
+    [isBiddingOpen]="store.isBiddingOpen()"
+    [hasCurrentBid]="!!store.currentBid()"
+    [rejectionMessage]="store.lastRejection()?.message ?? null"
+    (bumpBid)="bumpBid()"
+    (undoBid)="undoBid()"
+    (finalize)="finalize()"
+  />
+
+  @if (isAdmin()) {
+    <app-admin-console
+      [status]="store.auctionStatus()"
+      [isBiddingOpen]="store.isBiddingOpen()"
+      [isAwaitingNextRound]="store.isAwaitingNextRound()"
+      [round]="store.round()"
+      [unsoldCount]="store.awaitingNextRoundUnsoldCount()"
+      (start)="start()"
+      (pause)="pause()"
+      (resume)="resume()"
+      (skip)="skip()"
+      (startNextRound)="startNextRound()"
+    />
   }
+
+  <app-team-strip [teams]="store.teams()" [highlightedTeamId]="null" />
 </div>

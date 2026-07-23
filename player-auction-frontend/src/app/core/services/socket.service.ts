@@ -8,14 +8,14 @@ export class SocketService {
   private readonly sockets = new Map<string, Socket>();
   private readonly connectedSignals = new Map<string, ReturnType<typeof signal<boolean>>>();
 
-  connect(namespace: string, token: string): void {
+  connect(namespace: string, token?: string): void {
     const existing = this.sockets.get(namespace);
     if (existing?.connected) {
       return;
     }
 
     const socket = io(`${environment.socketUrl}${namespace}`, {
-      auth: { token },
+      auth: token ? { token } : {},
       transports: ['websocket'],
       autoConnect: true,
       reconnection: true,

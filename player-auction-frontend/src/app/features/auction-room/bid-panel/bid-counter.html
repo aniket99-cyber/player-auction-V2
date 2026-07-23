@@ -1,0 +1,41 @@
+<div class="bid-counter">
+  @if (isAdmin()) {
+    <button
+      mat-flat-button
+      color="primary"
+      class="bid-counter__bump"
+      [disabled]="!isBiddingOpen()"
+      (click)="bumpBid.emit()"
+    >
+      <mat-icon>add</mat-icon>
+      Bid — {{ nextValidBidAmount() }}
+    </button>
+
+    <button
+      mat-stroked-button
+      class="bid-counter__undo"
+      [disabled]="!isBiddingOpen() || !hasCurrentBid()"
+      (click)="undoBid.emit()"
+    >
+      <mat-icon>undo</mat-icon>
+      Undo
+    </button>
+
+    <button
+      mat-flat-button
+      color="accent"
+      class="bid-counter__finalize"
+      [disabled]="!isBiddingOpen() || !hasCurrentBid()"
+      (click)="finalize.emit()"
+    >
+      <mat-icon>gavel</mat-icon>
+      Finalize
+    </button>
+  } @else {
+    <span class="bid-counter__spectator-note">The admin is running the bidding for this player.</span>
+  }
+
+  @if (rejectionMessage(); as message) {
+    <span class="bid-counter__warning">{{ message }}</span>
+  }
+</div>

@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from 'mongoose';
+import { idTransformOptions } from '@models/schema-options';
 import { UserRole } from '@constants/enums';
 
 export interface IUser extends Document {
@@ -24,7 +25,7 @@ const userSchema = new Schema<IUser>(
     isActive: { type: Boolean, default: true },
     refreshTokenHash: { type: String, select: false },
   },
-  { timestamps: true },
+  { timestamps: true, ...idTransformOptions },
 );
 
 export const UserModel = model<IUser>('User', userSchema);

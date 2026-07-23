@@ -1,7 +1,7 @@
 # Player Auction System - Architecture & Guidelines
 
 ## Project Overview
-A production-ready, real-time Player Auction System inspired by IPL Auction and UEFA Champions League Draft systems. Enterprise-grade implementation with clean architecture, SOLID principles, and scalable design patterns.
+A production-ready, real-time Football Player Auction System for a school alumni reunion tournament, inspired by football auction formats (e.g. ISL-style) and UEFA Champions League Draft systems. Players are ex-students bidding into teams for the reunion tournament, with school-specific details (passing year, previous team/house) tracked alongside standard football positions and stats. Enterprise-grade implementation with clean architecture, SOLID principles, and scalable design patterns.
 
 ## Technology Stack
 

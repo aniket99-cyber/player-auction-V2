@@ -1,0 +1,29 @@
+<div class="deleted-records">
+  <div class="deleted-records__header">
+    <button mat-icon-button [routerLink]="backPath()" aria-label="Back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Deleted {{ entityLabel() }}</h1>
+  </div>
+
+  @if (isLoading()) {
+    <p class="deleted-records__loading">Loading...</p>
+  } @else if (records().length === 0) {
+    <p class="deleted-records__empty">No deleted {{ entityLabel().toLowerCase() }}.</p>
+  } @else {
+    <div class="deleted-records__list">
+      @for (record of records(); track record.id) {
+        <div class="deleted-records__row">
+          <div class="deleted-records__info">
+            <span class="deleted-records__name">{{ record.name }}</span>
+            <span class="deleted-records__meta">Deleted {{ record.deletedAt | date: 'medium' }}</span>
+          </div>
+          <button mat-flat-button color="primary" (click)="restore(record)">
+            <mat-icon>restore</mat-icon>
+            Restore
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,46 @@
+<div class="admin-console">
+  <span class="admin-console__title">Admin Console</span>
+
+  <div class="admin-console__actions">
+    @if (status() === 'DRAFT' || status() === 'SCHEDULED') {
+      <button mat-flat-button color="primary" (click)="start.emit()">
+        <mat-icon>play_arrow</mat-icon>
+        Start Auction
+      </button>
+    }
+
+    @if (status() === 'LIVE') {
+      <button mat-stroked-button (click)="pause.emit()">
+        <mat-icon>pause</mat-icon>
+        Pause
+      </button>
+    }
+
+    @if (status() === 'PAUSED') {
+      <button mat-flat-button color="primary" (click)="resume.emit()">
+        <mat-icon>play_arrow</mat-icon>
+        Resume
+      </button>
+    }
+
+    @if (isBiddingOpen()) {
+      <button mat-stroked-button (click)="skip.emit()">
+        <mat-icon>skip_next</mat-icon>
+        Skip Player
+      </button>
+    }
+  </div>
+
+  @if (isAwaitingNextRound()) {
+    <div class="admin-console__round-banner">
+      <mat-icon>replay</mat-icon>
+      <span>
+        Round {{ round() }} complete — {{ unsoldCount() }} player{{ unsoldCount() === 1 ? '' : 's' }}
+        unsold.
+      </span>
+      <button mat-flat-button color="primary" (click)="startNextRound.emit()">
+        Start Round {{ round() + 1 }}
+      </button>
+    </div>
+  }
+</div>

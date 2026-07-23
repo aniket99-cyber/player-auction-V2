@@ -1,0 +1,39 @@
+<div class="owner-list">
+  <div class="owner-list__header">
+    <h1>Owners</h1>
+    <button mat-flat-button color="primary" (click)="create()">
+      <mat-icon>add</mat-icon>
+      Add Owner
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <p class="owner-list__loading">Loading...</p>
+  } @else if (ownersWithTeam().length === 0) {
+    <p class="owner-list__empty">No owners added yet.</p>
+  } @else {
+    <div class="owner-list__grid">
+      @for (entry of ownersWithTeam(); track entry.owner.id) {
+        <div class="owner-list__card">
+          <div class="owner-list__photo">
+            @if (entry.owner.imageUrl) {
+              <img [src]="entry.owner.imageUrl" [alt]="entry.owner.name" />
+            } @else {
+              <mat-icon>person</mat-icon>
+            }
+          </div>
+          <span class="owner-list__name">{{ entry.owner.name }}</span>
+          <span class="owner-list__team">{{ entry.team?.name ?? 'Unknown team' }}</span>
+          <div class="owner-list__actions">
+            <button mat-icon-button (click)="edit(entry.owner)" aria-label="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="delete(entry.owner)" aria-label="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

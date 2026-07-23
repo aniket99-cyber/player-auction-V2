@@ -17,6 +17,7 @@ import { PlayerService } from '../services/player.service';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog';
 import { ImportDialog } from '../../../shared/components/import-dialog/import-dialog';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
+import { RetainPlayerDialog } from '../retain-player-dialog/retain-player-dialog';
 import {
   PaginatedResult,
   Player,
@@ -178,7 +179,7 @@ export class PlayerList implements OnInit {
       width: '520px',
       data: {
         title: 'Import Players',
-        hint: 'Upload a CSV or Excel file with columns: name, role, country, basePrice. Optional: age, matches, runs, wickets, average, strikeRate. All rows must be valid — if any row fails, nothing is imported.',
+        hint: 'Upload a CSV or Excel file with columns: name, role, country, basePrice. Optional: age, passingYear, previousTeam, appearances, goals, assists. All rows must be valid — if any row fails, nothing is imported.',
         importCsv: (file: File) => this.playerService.importCsv(file),
         importExcel: (file: File) => this.playerService.importExcel(file),
       },
@@ -200,6 +201,19 @@ export class PlayerList implements OnInit {
 
   editPlayer(player: Player): void {
     this.router.navigate(['/players', player.id, 'edit']);
+  }
+
+  retainPlayer(player: Player): void {
+    const dialogRef = this.dialog.open(RetainPlayerDialog, {
+      width: '440px',
+      data: { player },
+    });
+
+    dialogRef.afterClosed().subscribe((team) => {
+      if (!team) return;
+      this.snackBar.open(`"${player.name}" retained to ${team.name}`, 'Close', { duration: 4000 });
+      this.fetchPlayers();
+    });
   }
 
   deletePlayer(player: Player): void {

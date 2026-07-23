@@ -27,6 +27,7 @@ export class PlayerController {
       ids,
       minAge,
       maxAge,
+      passingYear,
       minBasePrice,
       maxBasePrice,
       sortBy,
@@ -48,6 +49,9 @@ export class PlayerController {
     }
     if (ids) {
       filter._id = { $in: ids.split(',') };
+    }
+    if (passingYear) {
+      filter.passingYear = Number(passingYear);
     }
     if (minAge || maxAge) {
       filter.age = {
