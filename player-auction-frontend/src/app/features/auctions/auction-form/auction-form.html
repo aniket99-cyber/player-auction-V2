@@ -23,29 +23,78 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
+      <mat-label>Player Pool Status</mat-label>
+      <mat-select formControlName="poolStatus" (selectionChange)="onPoolStatusChange()">
+        @for (status of poolStatusOptions; track status) {
+          <mat-option [value]="status">{{ status }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Which players are eligible to be queued into this auction</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
       <mat-label>Player Pool</mat-label>
       <mat-select formControlName="playerQueue" multiple>
+        <div class="auction-form__select-all">
+          <button mat-button type="button" (click)="toggleSelectAllPlayers()">
+            {{ allPlayersSelected() ? 'Clear All' : 'Select All' }}
+          </button>
+        </div>
         @for (player of availablePlayers(); track player.id) {
           <mat-option [value]="player.id">{{ player.name }} — {{ player.role }}</mat-option>
         }
       </mat-select>
       @if (availablePlayers().length === 0) {
-        <mat-hint>No unassigned players available — register players first</mat-hint>
+        <mat-hint>No players with this status available</mat-hint>
       }
       @if (form.controls.playerQueue.hasError('required')) {
         <mat-error>Select at least one player</mat-error>
       }
     </mat-form-field>
 
-    <div class="auction-form__row">
-      <mat-form-field appearance="outline">
-        <mat-label>Selection Mode</mat-label>
-        <mat-select formControlName="selectionMode">
-          @for (mode of selectionModes; track mode) {
-            <mat-option [value]="mode">{{ mode }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Selection Mode</mat-label>
+      <mat-select formControlName="selectionMode">
+        @for (mode of selectionModes; track mode) {
+          <mat-option [value]="mode">{{ mode }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="auction-form__tiers-section">
+      <h2>Bid Intervals</h2>
+      <p class="auction-form__tiers-hint">
+        Defaults come from Settings — adjust here for just this auction if needed.
+      </p>
+
+      <div class="auction-form__tiers">
+        @for (tier of tiers.controls; track $index; let i = $index) {
+          <div class="auction-form__tier-row" [formGroup]="tier">
+            <mat-form-field appearance="outline">
+              <mat-label>Up to</mat-label>
+              <input matInput type="number" formControlName="upTo" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Bid increases by</mat-label>
+              <input matInput type="number" formControlName="increment" />
+            </mat-form-field>
+            <button
+              mat-icon-button
+              type="button"
+              [disabled]="tiers.length <= 1"
+              (click)="removeTier(i)"
+              aria-label="Remove tier"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+
+      <button mat-button type="button" (click)="addTier()">
+        <mat-icon>add</mat-icon>
+        Add Tier
+      </button>
     </div>
 
     <div class="auction-form__actions">

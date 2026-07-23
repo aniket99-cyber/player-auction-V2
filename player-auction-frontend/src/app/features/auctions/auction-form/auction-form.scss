@@ -20,6 +20,46 @@
     gap: 16px;
   }
 
+  &__select-all {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--auction-border);
+  }
+
+  &__tiers-section {
+    margin: 8px 0 16px;
+
+    h2 {
+      color: var(--auction-text-primary);
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+  }
+
+  &__tiers-hint {
+    color: var(--auction-text-secondary);
+    font-size: 12px;
+    margin: 0 0 12px;
+  }
+
+  &__tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__tier-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
   &__actions {
     display: flex;
     justify-content: flex-end;

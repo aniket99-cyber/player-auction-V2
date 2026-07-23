@@ -9,7 +9,7 @@ export const createTeamSchema = Joi.object({
   logoUrl: Joi.string().uri().optional(),
   primaryColor: hexColor.optional(),
   secondaryColor: hexColor.optional(),
-  owner: objectId.required(),
+  owner: objectId.optional(),
   totalBudget: Joi.number().min(0).required(),
   season: Joi.string().trim().required(),
 });

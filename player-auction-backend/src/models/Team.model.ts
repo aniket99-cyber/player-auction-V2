@@ -16,7 +16,7 @@ export interface ITeam extends Document {
   logoUrl?: string;
   primaryColor: string;
   secondaryColor: string;
-  owner: Types.ObjectId;
+  owner?: Types.ObjectId;
   captain?: Types.ObjectId;
   totalBudget: number;
   remainingBudget: number;
@@ -66,7 +66,7 @@ const teamSchema = new Schema<ITeam>(
         message: 'secondaryColor must be a valid hex color (e.g. #0b0e14)',
       },
     },
-    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'User' },
     captain: { type: Schema.Types.ObjectId, ref: 'Player' },
     totalBudget: { type: Number, required: true, min: 0 },
     remainingBudget: { type: Number, required: true, min: 0 },

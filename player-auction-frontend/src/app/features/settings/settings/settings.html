@@ -1,6 +1,79 @@
 <div class="settings">
   <h1>Settings</h1>
 
+  @if (!isLoading()) {
+    <div class="settings__card">
+      <div class="settings__card-header">
+        <mat-icon>toll</mat-icon>
+        <h2>Team Points</h2>
+      </div>
+      <p class="settings__card-description">
+        Every team starts a new session with this many points. Existing teams are not affected —
+        this only applies to teams created after you save.
+      </p>
+      <form [formGroup]="budgetForm" (ngSubmit)="saveBudget()" class="settings__form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Default Team Points</mat-label>
+          <input matInput type="number" formControlName="defaultTeamBudget" />
+          @if (budgetForm.controls.defaultTeamBudget.hasError('required')) {
+            <mat-error>Required</mat-error>
+          }
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingBudget()">
+          Save
+        </button>
+      </form>
+    </div>
+
+    <div class="settings__card">
+      <div class="settings__card-header">
+        <mat-icon>trending_up</mat-icon>
+        <h2>Bid Intervals</h2>
+      </div>
+      <p class="settings__card-description">
+        Set how much the bid increases each time, per price tier. For example: up to 1000 points,
+        the bid moves by 100 each time; above 1000, it moves by 200. New auctions default to this
+        table — it can still be adjusted per-auction.
+      </p>
+
+      <form [formGroup]="tiersForm" (ngSubmit)="saveTiers()">
+        <div class="settings__tiers">
+          @for (tier of tiers.controls; track $index; let i = $index) {
+            <div class="settings__tier-row" [formGroup]="tier">
+              <mat-form-field appearance="outline">
+                <mat-label>Up to</mat-label>
+                <input matInput type="number" formControlName="upTo" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Bid increases by</mat-label>
+                <input matInput type="number" formControlName="increment" />
+              </mat-form-field>
+              <button
+                mat-icon-button
+                type="button"
+                [disabled]="tiers.length <= 1"
+                (click)="removeTier(i)"
+                aria-label="Remove tier"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="settings__tier-actions">
+          <button mat-button type="button" (click)="addTier()">
+            <mat-icon>add</mat-icon>
+            Add Tier
+          </button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="isSavingTiers()">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
   <div class="settings__card settings__card--danger">
     <div class="settings__card-header">
       <mat-icon>restart_alt</mat-icon>

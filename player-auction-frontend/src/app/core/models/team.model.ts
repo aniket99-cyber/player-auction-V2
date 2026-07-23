@@ -13,7 +13,7 @@ export interface Team {
   logoUrl?: string;
   primaryColor: string;
   secondaryColor: string;
-  owner: string;
+  owner?: string;
   ownerName?: string;
   captain?: string;
   totalBudget: number;
@@ -33,7 +33,6 @@ export interface CreateTeamRequest {
   logoUrl?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  owner: string;
   totalBudget: number;
   season: string;
 }

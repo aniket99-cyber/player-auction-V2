@@ -59,13 +59,14 @@ export class TeamController {
   ): Promise<Array<Record<string, unknown> & { ownerName?: string }>> {
     if (teams.length === 0) return [];
 
-    const ownerIds = [...new Set(teams.map((t) => t.owner.toString()))];
-    const owners = await this.userRepository.findMany({ _id: { $in: ownerIds } } as never);
+    const ownerIds = [...new Set(teams.filter((t) => t.owner).map((t) => t.owner!.toString()))];
+    const owners =
+      ownerIds.length > 0 ? await this.userRepository.findMany({ _id: { $in: ownerIds } } as never) : [];
     const ownerNameById = new Map(owners.map((o) => [o._id.toString(), o.name]));
 
     return teams.map((team) => ({
       ...team.toObject(),
-      ownerName: ownerNameById.get(team.owner.toString()),
+      ownerName: team.owner ? ownerNameById.get(team.owner.toString()) : undefined,
     }));
   }
 

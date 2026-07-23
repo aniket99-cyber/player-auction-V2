@@ -1,12 +1,15 @@
 .settings {
   max-width: 640px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   h1 {
     color: var(--auction-text-primary);
     font-size: 22px;
     font-weight: 600;
-    margin: 0 0 24px;
+    margin: 0 0 4px;
   }
 
   &__card {
@@ -18,6 +21,39 @@
     &--danger {
       border-color: var(--auction-danger);
     }
+  }
+
+  &__form-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+  &__tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__tier-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+  &__tier-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
   }
 
   &__card-header {

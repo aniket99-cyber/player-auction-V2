@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TeamService } from '../services/team.service';
+import { AdminService } from '../../settings/services/admin.service';
 import { Team } from '../../../core/models';
 
 @Component({
@@ -25,6 +26,7 @@ import { Team } from '../../../core/models';
 export class TeamForm implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly teamService = inject(TeamService);
+  private readonly adminService = inject(AdminService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
@@ -39,7 +41,6 @@ export class TeamForm implements OnInit {
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
     shortName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(5)]],
     season: ['', Validators.required],
-    owner: ['', Validators.required],
     totalBudget: [0, [Validators.required, Validators.min(0)]],
     primaryColor: ['#2fd0ff', Validators.required],
     secondaryColor: ['#0b0e14', Validators.required],
@@ -51,6 +52,10 @@ export class TeamForm implements OnInit {
       this.isEditMode.set(true);
       this.teamId.set(id);
       this.teamService.getById(id).subscribe((team) => this.patchForm(team));
+    } else {
+      this.adminService
+        .getSettings()
+        .subscribe((settings) => this.form.patchValue({ totalBudget: settings.defaultTeamBudget }));
     }
   }
 
@@ -106,7 +111,6 @@ export class TeamForm implements OnInit {
       name: team.name,
       shortName: team.shortName,
       season: team.season,
-      owner: team.owner,
       totalBudget: team.totalBudget,
       primaryColor: team.primaryColor,
       secondaryColor: team.secondaryColor,
