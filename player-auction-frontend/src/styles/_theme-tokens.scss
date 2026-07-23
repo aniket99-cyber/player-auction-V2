@@ -1,0 +1,38 @@
+// Dark Sport Theme design tokens — single source of truth for colors used
+// outside Angular Material's own system (GSAP timelines, ApexCharts, Lottie
+// tinting, raw SCSS). Keep in sync with the mat.theme() palette in styles.scss.
+
+:root {
+  // Base surfaces — stadium-at-night depth, not flat black
+  --auction-bg-canvas: #0b0e14;
+  --auction-bg-surface: #12161f;
+  --auction-bg-surface-raised: #1a1f2b;
+  --auction-bg-overlay: #232937;
+
+  // Accent — electric pitch-side blue, the primary brand accent
+  --auction-accent: #2fd0ff;
+  --auction-accent-strong: #00a3d9;
+
+  // Gold — reserved exclusively for "sold" / winning-bid / premium moments
+  --auction-gold: #f4b942;
+  --auction-gold-strong: #d99a1f;
+
+  // Signal colors
+  --auction-success: #34d399;
+  --auction-danger: #f2495c;
+  --auction-warning: #f4b942;
+
+  // Text
+  --auction-text-primary: #f4f6fb;
+  --auction-text-secondary: #9aa4b8;
+  --auction-text-disabled: #5b6478;
+
+  // Borders / dividers
+  --auction-border: #262d3d;
+
+  // Elevation shadows tuned for a dark canvas
+  --auction-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --auction-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --auction-shadow-glow-accent: 0 0 24px rgba(47, 208, 255, 0.35);
+  --auction-shadow-glow-gold: 0 0 24px rgba(244, 185, 66, 0.4);
+}

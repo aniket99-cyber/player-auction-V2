@@ -1,0 +1,53 @@
+.deleted-teams {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    h1 {
+      color: var(--auction-text-primary);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__loading,
+  &__empty {
+    color: var(--auction-text-secondary);
+    padding: 32px;
+    text-align: center;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--auction-bg-surface);
+    border: 1px solid var(--auction-border);
+    border-radius: 10px;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__name {
+    color: var(--auction-text-primary);
+    font-weight: 500;
+  }
+
+  &__meta {
+    color: var(--auction-text-secondary);
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,32 @@
+.auction-room {
+  color: var(--auction-text-primary);
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--auction-text-secondary);
+  }
+
+  &__latest-bid {
+    margin-top: 16px;
+    font-size: 20px;
+
+    strong {
+      color: var(--auction-gold);
+    }
+  }
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--auction-danger);
+
+  &--live {
+    background: var(--auction-success);
+    box-shadow: 0 0 8px var(--auction-success);
+  }
+}

@@ -1,0 +1,64 @@
+.formation {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: radial-gradient(ellipse at center, var(--auction-bg-surface-raised), var(--auction-bg-surface));
+  border: 1px solid var(--auction-border);
+  border-radius: 16px;
+
+  &__empty {
+    color: var(--auction-text-secondary);
+    text-align: center;
+    padding: 24px;
+  }
+
+  &__row-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--auction-text-secondary);
+    margin-bottom: 10px;
+  }
+
+  &__row-players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  &__chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 76px;
+  }
+
+  &__chip img,
+  &__chip-initial {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--auction-accent);
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--auction-bg-overlay);
+    color: var(--auction-text-primary);
+    font-weight: 600;
+  }
+
+  &__chip-name {
+    font-size: 11px;
+    color: var(--auction-text-primary);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+}

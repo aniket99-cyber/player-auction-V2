@@ -1,0 +1,131 @@
+.team-list {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    h1 {
+      color: var(--auction-text-primary);
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    flex: 1 1 280px;
+    min-width: 220px;
+  }
+
+  &__table-wrapper {
+    background: var(--auction-bg-surface);
+    border: 1px solid var(--auction-border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  &__table {
+    width: 100%;
+    background: transparent;
+
+    ::ng-deep .mat-mdc-row:hover {
+      background: var(--auction-bg-overlay);
+      cursor: pointer;
+    }
+  }
+
+  &__tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__crest {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--auction-bg-canvas);
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__name-link {
+    color: var(--auction-text-primary);
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--auction-accent);
+    }
+  }
+
+  &__empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--auction-text-secondary);
+  }
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 8px;
+  }
+
+  &__skeleton-row {
+    height: 48px;
+    border-radius: 8px;
+    background: linear-gradient(
+      90deg,
+      var(--auction-bg-surface-raised) 25%,
+      var(--auction-bg-overlay) 50%,
+      var(--auction-bg-surface-raised) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  &__bulk-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--auction-bg-surface-raised);
+    border: 1px solid var(--auction-glass-border);
+    border-radius: 999px;
+    box-shadow: var(--auction-shadow-md);
+    color: var(--auction-text-primary);
+    z-index: 100;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

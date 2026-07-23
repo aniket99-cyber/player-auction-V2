@@ -1,0 +1,58 @@
+.audit-history {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    h1 {
+      color: var(--auction-text-primary);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__loading,
+  &__empty {
+    color: var(--auction-text-secondary);
+    padding: 32px;
+    text-align: center;
+  }
+
+  &__timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--auction-bg-surface);
+    border: 1px solid var(--auction-border);
+    border-radius: 10px;
+  }
+
+  &__entry-icon {
+    color: var(--auction-accent);
+  }
+
+  &__entry-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__entry-action {
+    color: var(--auction-text-primary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &__entry-time {
+    color: var(--auction-text-secondary);
+    font-size: 12px;
+  }
+}

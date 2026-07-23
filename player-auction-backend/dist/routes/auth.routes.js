@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authRoutes = void 0;
+const express_1 = require("express");
+const auth_controller_1 = require("@controllers/auth.controller");
+const auth_service_1 = require("@services/auth.service");
+const UserRepository_1 = require("@repositories/implementations/UserRepository");
+const validate_middleware_1 = require("@middleware/validate.middleware");
+const auth_middleware_1 = require("@middleware/auth.middleware");
+const auth_validator_1 = require("@validators/auth.validator");
+const asyncHandler_1 = require("@utils/asyncHandler");
+const router = (0, express_1.Router)();
+const authService = new auth_service_1.AuthService(new UserRepository_1.UserRepository());
+const authController = new auth_controller_1.AuthController(authService);
+router.post('/register', (0, validate_middleware_1.validate)(auth_validator_1.registerSchema), (0, asyncHandler_1.asyncHandler)(authController.register));
+router.post('/login', (0, validate_middleware_1.validate)(auth_validator_1.loginSchema), (0, asyncHandler_1.asyncHandler)(authController.login));
+router.post('/refresh', (0, validate_middleware_1.validate)(auth_validator_1.refreshSchema), (0, asyncHandler_1.asyncHandler)(authController.refresh));
+router.post('/logout', auth_middleware_1.authenticate, (0, asyncHandler_1.asyncHandler)(authController.logout));
+exports.authRoutes = router;
+//# sourceMappingURL=auth.routes.js.map

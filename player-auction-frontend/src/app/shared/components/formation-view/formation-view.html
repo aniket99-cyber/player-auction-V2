@@ -1,0 +1,23 @@
+<div class="formation">
+  @if (rows().length === 0) {
+    <p class="formation__empty">No players in the squad yet.</p>
+  } @else {
+    @for (row of rows(); track row.role) {
+      <div class="formation__row">
+        <span class="formation__row-label">{{ row.label }}</span>
+        <div class="formation__row-players">
+          @for (player of row.players; track player.id) {
+            <div class="formation__chip" [style.borderColor]="primaryColor()">
+              @if (player.imageUrl) {
+                <img [src]="player.imageUrl" [alt]="player.name" />
+              } @else {
+                <span class="formation__chip-initial">{{ player.name.charAt(0) }}</span>
+              }
+              <span class="formation__chip-name">{{ player.name }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,103 @@
+.team-form {
+  max-width: 640px;
+
+  h1 {
+    color: var(--auction-text-primary);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 24px;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__logo-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  &__logo-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--auction-border);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    mat-icon {
+      color: var(--auction-bg-canvas);
+    }
+  }
+
+  &__logo-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--auction-border);
+    border-radius: 8px;
+    color: var(--auction-text-primary);
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover {
+      background: var(--auction-bg-overlay);
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  &__colors {
+    margin: 8px 0 16px;
+  }
+
+  &__color-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border: 1px solid var(--auction-border);
+    border-radius: 8px;
+
+    span {
+      color: var(--auction-text-secondary);
+      font-size: 13px;
+    }
+
+    input[type='color'] {
+      width: 36px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}

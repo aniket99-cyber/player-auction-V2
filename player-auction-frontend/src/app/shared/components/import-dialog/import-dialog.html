@@ -1,0 +1,55 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  @if (!result()) {
+    <p class="import-dialog__hint">{{ data.hint }}</p>
+
+    <label class="import-dialog__drop-zone">
+      <input type="file" accept=".csv,.xls,.xlsx" (change)="onFileSelected($event)" hidden />
+      <mat-icon>upload_file</mat-icon>
+      <span>{{ selectedFile()?.name ?? 'Choose a file' }}</span>
+    </label>
+
+    @if (isUploading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    @if (generalError()) {
+      <p class="import-dialog__error">{{ generalError() }}</p>
+    }
+
+    @if (rowErrors().length > 0) {
+      <div class="import-dialog__row-errors">
+        <p class="import-dialog__error-heading">
+          Import rejected — {{ rowErrors().length }} row(s) have errors:
+        </p>
+        @for (rowError of rowErrors(); track rowError.rowNumber) {
+          <div class="import-dialog__row-error">
+            <strong>Row {{ rowError.rowNumber }}</strong>
+            <ul>
+              @for (message of rowError.errors; track message) {
+                <li>{{ message }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+  } @else {
+    <div class="import-dialog__success">
+      <mat-icon>check_circle</mat-icon>
+      <p>{{ result()!.imported }} record(s) imported successfully.</p>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (!result()) {
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" [disabled]="!selectedFile() || isUploading()" (click)="upload()">
+      Import
+    </button>
+  } @else {
+    <button mat-flat-button color="primary" (click)="done()">Done</button>
+  }
+</mat-dialog-actions>

@@ -1,0 +1,73 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: radial-gradient(circle at top, var(--auction-bg-surface), var(--auction-bg-canvas));
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 32px;
+  border-radius: 16px;
+  background: var(--auction-bg-surface-raised);
+  border: 1px solid var(--auction-border);
+  box-shadow: var(--auction-shadow-md);
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+
+    mat-icon {
+      color: var(--auction-accent);
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--auction-text-primary);
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__error {
+    color: var(--auction-danger);
+    font-size: 13px;
+    margin: 0 0 12px;
+  }
+
+  &__submit {
+    height: 48px;
+    margin-top: 8px;
+  }
+
+  &__footer {
+    margin: 24px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--auction-text-secondary);
+
+    a {
+      color: var(--auction-accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}

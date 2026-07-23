@@ -1,0 +1,77 @@
+@if (team(); as t) {
+  <div class="team-detail">
+    <div class="team-detail__header">
+      <div class="team-detail__crest" [style.background]="t.primaryColor">
+        @if (t.logoUrl) {
+          <img [src]="t.logoUrl" [alt]="t.name" />
+        } @else {
+          {{ t.shortName }}
+        }
+      </div>
+      <div class="team-detail__title-block">
+        <h1>{{ t.name }}</h1>
+        <span class="team-detail__season">Season {{ t.season }}</span>
+      </div>
+      <div class="team-detail__header-actions">
+        <button mat-button [routerLink]="['/teams', t.id, 'edit']">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-button [routerLink]="['/teams', t.id, 'audit-history']">
+          <mat-icon>history</mat-icon>
+          Audit History
+        </button>
+      </div>
+    </div>
+
+    <div class="team-detail__budget-card">
+      <div class="team-detail__budget-meter">
+        <div class="team-detail__budget-fill" [style.width.%]="budgetUsedPercent()"></div>
+      </div>
+      <span class="team-detail__budget-label">
+        {{ t.remainingBudget }} / {{ t.totalBudget }} remaining ({{ 100 - budgetUsedPercent() }}%)
+      </span>
+    </div>
+
+    <mat-tab-group class="team-detail__tabs">
+      <mat-tab label="Squad">
+        @if (isLoading()) {
+          <p class="team-detail__loading">Loading squad...</p>
+        } @else if (squad().length === 0) {
+          <p class="team-detail__empty">No players on this roster yet.</p>
+        } @else {
+          <div class="team-detail__squad-grid">
+            @for (player of squad(); track player.id) {
+              <div class="team-detail__player-card">
+                <span class="team-detail__player-name">{{ player.name }}</span>
+                <span class="team-detail__player-role">{{ player.role }}</span>
+                @if (player.soldPrice) {
+                  <span class="team-detail__player-price">{{ player.soldPrice }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </mat-tab>
+
+      <mat-tab label="Statistics">
+        <div class="team-detail__stats-panel">
+          <h3>Role Distribution</h3>
+          <apx-chart
+            [series]="roleStatChartOptions().series"
+            [chart]="roleStatChartOptions().chart"
+            [xaxis]="roleStatChartOptions().xaxis"
+            [dataLabels]="roleStatChartOptions().dataLabels"
+            [stroke]="roleStatChartOptions().stroke"
+            [grid]="roleStatChartOptions().grid"
+            [colors]="roleStatChartOptions().colors"
+          />
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Formation">
+        <app-formation-view [players]="squad()" [primaryColor]="t.primaryColor" />
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+}

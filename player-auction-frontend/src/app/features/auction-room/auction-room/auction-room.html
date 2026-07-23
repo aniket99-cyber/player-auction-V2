@@ -1,0 +1,12 @@
+<div class="auction-room">
+  <div class="auction-room__status">
+    <span class="status-dot" [class.status-dot--live]="connected()"></span>
+    {{ connected() ? 'Connected' : 'Connecting...' }}
+  </div>
+
+  @if (latestBid(); as bid) {
+    <div class="auction-room__latest-bid">
+      Latest bid: <strong>{{ bid.amount }}</strong>
+    </div>
+  }
+</div>

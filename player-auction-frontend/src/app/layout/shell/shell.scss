@@ -1,0 +1,54 @@
+.shell {
+  height: 100vh;
+
+  &__sidenav {
+    width: 240px;
+    background: var(--auction-bg-surface);
+    border-right: 1px solid var(--auction-border);
+    padding-top: 8px;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px 24px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--auction-text-primary);
+
+    mat-icon {
+      color: var(--auction-accent);
+    }
+  }
+
+  &__nav-item--active {
+    background: var(--auction-bg-overlay);
+    color: var(--auction-accent) !important;
+  }
+
+  &__content {
+    background: var(--auction-bg-canvas);
+  }
+
+  &__toolbar {
+    background: var(--auction-bg-surface);
+    border-bottom: 1px solid var(--auction-border);
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  &__user {
+    margin-right: 12px;
+    font-size: 14px;
+    color: var(--auction-text-secondary);
+  }
+
+  &__main {
+    padding: 24px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+}
