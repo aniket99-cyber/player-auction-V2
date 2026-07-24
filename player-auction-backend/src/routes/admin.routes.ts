@@ -6,7 +6,6 @@ import { AuctionRepository } from '@repositories/implementations/AuctionReposito
 import { TeamRepository } from '@repositories/implementations/TeamRepository';
 import { PlayerRepository } from '@repositories/implementations/PlayerRepository';
 import { OwnerRepository } from '@repositories/implementations/OwnerRepository';
-import { CaptainRepository } from '@repositories/implementations/CaptainRepository';
 import { BidRepository } from '@repositories/implementations/BidRepository';
 import { AuditLogRepository } from '@repositories/implementations/AuditLogRepository';
 import { SettingsRepository } from '@repositories/implementations/SettingsRepository';
@@ -23,7 +22,6 @@ const sessionResetService = new SessionResetService(
   new TeamRepository(),
   new PlayerRepository(),
   new OwnerRepository(),
-  new CaptainRepository(),
   new BidRepository(),
   new AuditLogRepository(),
   auctionService,

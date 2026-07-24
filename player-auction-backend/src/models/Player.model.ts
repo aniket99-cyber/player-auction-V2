@@ -7,8 +7,8 @@ export interface IPlayer extends Document {
   name: string;
   role: PlayerRole;
   country: string;
+  passingYear: number;
   age?: number;
-  passingYear?: number;
   previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
@@ -34,8 +34,8 @@ const playerSchema = new Schema<IPlayer>(
     name: { type: String, required: true, trim: true },
     role: { type: String, enum: Object.values(PlayerRole), required: true },
     country: { type: String, required: true, trim: true },
+    passingYear: { type: Number, required: true, min: 1950, max: 2100 },
     age: { type: Number, min: 14, max: 60 },
-    passingYear: { type: Number, min: 1950, max: 2100 },
     previousTeam: { type: String, trim: true },
     basePrice: { type: Number, required: true, min: 0 },
     imageUrl: { type: String },
@@ -62,11 +62,10 @@ const playerSchema = new Schema<IPlayer>(
 
 playerSchema.index({ auctionStatus: 1 });
 playerSchema.index({ role: 1 });
-playerSchema.index({ country: 1 });
 playerSchema.index({ basePrice: 1 });
 playerSchema.index({ isDeleted: 1 });
 playerSchema.index({ passingYear: 1 });
-playerSchema.index({ name: 'text', country: 'text' });
+playerSchema.index({ name: 'text', passingYear: 'text' });
 
 // Soft-delete convention: mirrors Team.model.ts — every normal find is
 // scoped to non-deleted rows unless explicitly overridden.

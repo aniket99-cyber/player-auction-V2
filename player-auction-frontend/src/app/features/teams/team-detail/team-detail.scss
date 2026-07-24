@@ -88,6 +88,11 @@
     background: var(--auction-bg-surface);
     border: 1px solid var(--auction-border);
     border-radius: 10px;
+
+    &--captain {
+      border-color: rgba(255, 207, 76, 0.9);
+      box-shadow: inset 0 0 0 1px rgba(255, 207, 76, 0.22);
+    }
   }
 
   &__player-name {
@@ -99,6 +104,20 @@
   &__player-role {
     color: var(--auction-text-secondary);
     font-size: 12px;
+  }
+
+  &__player-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255, 207, 76, 0.18);
+    color: var(--auction-gold);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 
   &__player-price {

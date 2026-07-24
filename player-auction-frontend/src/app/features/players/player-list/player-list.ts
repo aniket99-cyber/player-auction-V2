@@ -14,16 +14,19 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { PlayerService } from '../services/player.service';
+import { TeamService } from '../../teams/services/team.service';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog';
 import { ImportDialog } from '../../../shared/components/import-dialog/import-dialog';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 import { RetainPlayerDialog } from '../retain-player-dialog/retain-player-dialog';
+import { CaptainAssignmentDialog } from '../captain-assignment-dialog/captain-assignment-dialog';
 import {
   PaginatedResult,
   Player,
   PlayerAuctionStatus,
   PlayerImportResult,
   PlayerRole,
+  Team,
 } from '../../../core/models';
 
 @Component({
@@ -45,6 +48,7 @@ import {
 })
 export class PlayerList implements OnInit {
   private readonly playerService = inject(PlayerService);
+  private readonly teamService = inject(TeamService);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
@@ -67,6 +71,7 @@ export class PlayerList implements OnInit {
   ];
 
   readonly players = signal<Player[]>([]);
+  readonly captainPlayerIds = signal<Set<string>>(new Set());
   readonly total = signal(0);
   readonly page = signal(0);
   readonly pageSize = signal(20);
@@ -95,6 +100,7 @@ export class PlayerList implements OnInit {
         this.fetchPlayers();
       });
 
+    this.loadCaptainAssignments();
     this.fetchPlayers();
     this.subscribeToRealtimeUpdates();
 
@@ -216,6 +222,42 @@ export class PlayerList implements OnInit {
     });
   }
 
+  markAsCaptain(player: Player): void {
+    // Load all teams first
+    this.teamService
+      .list({ page: 1, limit: 1000 })
+      .subscribe({
+        next: (result) => {
+          const teams = result.data;
+          if (teams.length === 0) {
+            this.snackBar.open('No teams available', 'Close', { duration: 4000 });
+            return;
+          }
+
+          // Open dialog to select team
+          const dialogRef = this.dialog.open(CaptainAssignmentDialog, {
+            width: '480px',
+            data: {
+              team: teams[0],
+              allTeams: teams,
+              selectedPlayer: player,
+            },
+          });
+
+          dialogRef.afterClosed().subscribe((team: Team | null) => {
+            if (!team) return;
+            this.teamService.setCaptain(team.id, player.id).subscribe(() => {
+              this.snackBar.open(`${player.name} assigned as captain to ${team.name}`, 'Close', {
+                duration: 4000,
+              });
+              this.loadCaptainAssignments();
+              this.fetchPlayers();
+            });
+          });
+        },
+      });
+  }
+
   deletePlayer(player: Player): void {
     const dialogRef = this.dialog.open(ConfirmDialog, {
       data: {
@@ -289,6 +331,28 @@ export class PlayerList implements OnInit {
       (p) => `${p.name},${p.role},${p.country},${p.age ?? ''},${p.basePrice},${p.auctionStatus}`,
     );
     return [header, ...lines].join('\n');
+  }
+
+  private loadCaptainAssignments(): void {
+    this.teamService.list({ page: 1, limit: 1000 }).subscribe({
+      next: (result) => {
+        const captainIds = new Set<string>(
+          result.data
+            .map((team) => team.captain)
+            .filter((captainId): captainId is string => Boolean(captainId)),
+        );
+        this.captainPlayerIds.set(captainIds);
+      },
+      error: () => this.captainPlayerIds.set(new Set()),
+    });
+  }
+
+  isCaptain(player: Player): boolean {
+    return this.captainPlayerIds().has(player.id) || player.auctionStatus === PlayerAuctionStatus.CAPTAIN;
+  }
+
+  displayStatus(player: Player): PlayerAuctionStatus {
+    return this.isCaptain(player) ? PlayerAuctionStatus.CAPTAIN : player.auctionStatus;
   }
 
   private fetchPlayers(): void {

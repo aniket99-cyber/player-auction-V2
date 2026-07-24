@@ -11,8 +11,8 @@ export interface Player {
   name: string;
   role: PlayerRole;
   country: string;
+  passingYear: number;
   age?: number;
-  passingYear?: number;
   previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
@@ -31,8 +31,8 @@ export interface CreatePlayerRequest {
   name: string;
   role: PlayerRole;
   country: string;
-  age?: number;
   passingYear?: number;
+  age?: number;
   previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
@@ -43,8 +43,8 @@ export interface UpdatePlayerRequest {
   name?: string;
   role?: PlayerRole;
   country?: string;
-  age?: number;
   passingYear?: number;
+  age?: number;
   previousTeam?: string;
   basePrice?: number;
   imageUrl?: string;

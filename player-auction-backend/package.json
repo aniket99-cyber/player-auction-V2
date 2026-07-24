@@ -8,6 +8,8 @@
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "start": "node -r tsconfig-paths/register dist/server.js",
     "seed": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed.ts",
+    "reset-players": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/reset-players.ts",
+    "seed-fresh-players": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed-fresh-players.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

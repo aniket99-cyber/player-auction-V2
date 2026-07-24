@@ -42,9 +42,12 @@
         } @else {
           <div class="team-detail__squad-grid">
             @for (player of squad(); track player.id) {
-              <div class="team-detail__player-card">
+              <div class="team-detail__player-card" [class.team-detail__player-card--captain]="isCaptain(player)">
                 <span class="team-detail__player-name">{{ player.name }}</span>
                 <span class="team-detail__player-role">{{ player.role }}</span>
+                @if (isCaptain(player)) {
+                  <span class="team-detail__player-badge">Captain</span>
+                }
                 @if (player.soldPrice) {
                   <span class="team-detail__player-price">{{ player.soldPrice }}</span>
                 }
@@ -70,7 +73,11 @@
       </mat-tab>
 
       <mat-tab label="Formation">
-        <app-formation-view [players]="squad()" [primaryColor]="t.primaryColor" />
+        <app-formation-view
+          [players]="squad()"
+          [primaryColor]="t.primaryColor"
+          [captainId]="t.captain"
+        />
       </mat-tab>
     </mat-tab-group>
   </div>

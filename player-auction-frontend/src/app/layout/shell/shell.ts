@@ -23,7 +23,6 @@ const BASE_NAV_ITEMS: NavItem[] = [
 const ADMIN_ONLY_NAV_ITEMS: NavItem[] = [
   { label: 'Auctions', icon: 'gavel', route: '/auctions' },
   { label: 'Owners', icon: 'workspace_premium', route: '/owners' },
-  { label: 'Captains', icon: 'military_tech', route: '/captains' },
   { label: 'Settings', icon: 'settings', route: '/settings' },
 ];
 

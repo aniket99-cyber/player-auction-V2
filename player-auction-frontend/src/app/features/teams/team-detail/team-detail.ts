@@ -41,6 +41,10 @@ export class TeamDetail implements OnInit {
   readonly squad = signal<Player[]>([]);
   readonly isLoading = signal(true);
 
+  isCaptain(player: Player): boolean {
+    return this.team()?.captain === player.id;
+  }
+
   readonly budgetUsedPercent = computed(() => {
     const t = this.team();
     if (!t || t.totalBudget === 0) return 0;

@@ -52,6 +52,14 @@ export class TeamService {
     return this.api.post<Team>(`/teams/${id}/retentions`, payload);
   }
 
+  setCaptain(teamId: string, playerId: string): Observable<Team> {
+    return this.api.patch<Team>(`/teams/${teamId}`, { captain: playerId });
+  }
+
+  removeCaptain(teamId: string): Observable<Team> {
+    return this.api.patch<Team>(`/teams/${teamId}`, { captain: null });
+  }
+
   softDelete(id: string): Observable<void> {
     return this.api.delete<void>(`/teams/${id}`);
   }

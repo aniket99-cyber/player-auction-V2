@@ -4,7 +4,6 @@ import { IAuctionRepository } from '@repositories/interfaces/IAuctionRepository'
 import { ITeamRepository } from '@repositories/interfaces/ITeamRepository';
 import { IPlayerRepository } from '@repositories/interfaces/IPlayerRepository';
 import { IOwnerRepository } from '@repositories/interfaces/IOwnerRepository';
-import { ICaptainRepository } from '@repositories/interfaces/ICaptainRepository';
 import { IBidRepository } from '@repositories/interfaces/IBidRepository';
 import { IAuditLogRepository } from '@repositories/interfaces/IAuditLogRepository';
 
@@ -13,7 +12,6 @@ export interface SessionResetSummary {
   teams: number;
   players: number;
   owners: number;
-  captains: number;
   bids: number;
   auditLogs: number;
 }
@@ -32,7 +30,6 @@ export class SessionResetService {
     private readonly teamRepository: ITeamRepository,
     private readonly playerRepository: IPlayerRepository,
     private readonly ownerRepository: IOwnerRepository,
-    private readonly captainRepository: ICaptainRepository,
     private readonly bidRepository: IBidRepository,
     private readonly auditLogRepository: IAuditLogRepository,
     private readonly auctionService: AuctionService,
@@ -44,12 +41,11 @@ export class SessionResetService {
     // would throw into an unhandled rejection.
     this.auctionService.clearAllInMemoryState();
 
-    const [auctions, teams, players, owners, captains, bids] = await Promise.all([
+    const [auctions, teams, players, owners, bids] = await Promise.all([
       this.auctionRepository.deleteAll(),
       this.teamRepository.deleteAll(),
       this.playerRepository.deleteAll(),
       this.ownerRepository.deleteAll(),
-      this.captainRepository.deleteAll(),
       this.bidRepository.deleteAll(),
     ]);
 
@@ -60,12 +56,12 @@ export class SessionResetService {
       action: 'session.reset',
       entityType: 'Session',
       entityId: 'all',
-      after: { auctions, teams, players, owners, captains, bids },
+      after: { auctions, teams, players, owners, bids },
     });
     const auditLogs = await this.auditLogRepository.deleteAll();
 
-    logger.info('Session reset completed', { actorId, auctions, teams, players, owners, captains, bids, auditLogs });
+    logger.info('Session reset completed', { actorId, auctions, teams, players, owners, bids, auditLogs });
 
-    return { auctions, teams, players, owners, captains, bids, auditLogs };
+    return { auctions, teams, players, owners, bids, auditLogs };
   }
 }

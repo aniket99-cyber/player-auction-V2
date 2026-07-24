@@ -133,21 +133,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/owners/owner-form/owner-form').then((m) => m.OwnerForm),
       },
       {
-        path: 'captains',
-        loadComponent: () =>
-          import('./features/captains/captain-list/captain-list').then((m) => m.CaptainList),
-      },
-      {
-        path: 'captains/new',
-        loadComponent: () =>
-          import('./features/captains/captain-form/captain-form').then((m) => m.CaptainForm),
-      },
-      {
-        path: 'captains/:id/edit',
-        loadComponent: () =>
-          import('./features/captains/captain-form/captain-form').then((m) => m.CaptainForm),
-      },
-      {
         path: 'settings',
         canActivate: [roleGuard([UserRole.ADMIN])],
         loadComponent: () =>

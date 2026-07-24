@@ -1,0 +1,102 @@
+<div class="captain-assignment-dialog">
+  <h2 mat-dialog-title>Assign Captain</h2>
+
+  <mat-dialog-content>
+    <form [formGroup]="form">
+      <!-- Team Selection -->
+      @if (allTeams().length > 0) {
+        <mat-form-field appearance="outline" class="captain-assignment-dialog__form-field">
+          <mat-label>Select Team</mat-label>
+          <mat-select formControlName="teamSelect">
+            @for (team of allTeams(); track team.id) {
+              <mat-option [value]="team">{{ team.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <!-- Player Info Display (when pre-selected) -->
+      @if (selectedPlayer(); as player) {
+        <div class="captain-assignment-dialog__player-info">
+          <span class="captain-assignment-dialog__label">Player:</span>
+          <div class="captain-assignment-dialog__player-card">
+            @if (player.imageUrl) {
+              <img [src]="player.imageUrl" [alt]="player.name" />
+            } @else {
+              <span class="captain-assignment-dialog__player-avatar-fallback">{{ player.name.charAt(0) }}</span>
+            }
+            <div>
+              <span class="captain-assignment-dialog__player-name">{{ player.name }}</span>
+              <span class="captain-assignment-dialog__player-meta">{{ player.role }} • {{ player.country }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Player Search (when not pre-selected) -->
+      @if (showPlayerSearch()) {
+        <mat-form-field appearance="outline" class="captain-assignment-dialog__form-field">
+          <mat-label>Search Player</mat-label>
+          <input
+            matInput
+            formControlName="playerSearch"
+            (input)="onSearchChange($event)"
+            placeholder="Search by name, role, or country..."
+            autocomplete="off"
+          />
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        @if (isLoading()) {
+          <div class="captain-assignment-dialog__loading">
+            <mat-spinner diameter="24"></mat-spinner>
+            <span>Loading players...</span>
+          </div>
+        }
+
+        @if (!isLoading() && filteredPlayers().length === 0) {
+          <div class="captain-assignment-dialog__empty">
+            No players found. Try a different search term.
+          </div>
+        }
+
+        @if (!isLoading() && filteredPlayers().length > 0) {
+          <div class="captain-assignment-dialog__player-list">
+            @for (player of filteredPlayers(); track player.id) {
+              <button
+                type="button"
+                class="captain-assignment-dialog__player-item"
+                (click)="selectPlayer(player)"
+              >
+                @if (player.imageUrl) {
+                  <img
+                    [src]="player.imageUrl"
+                    [alt]="player.name"
+                    class="captain-assignment-dialog__player-avatar"
+                  />
+                } @else {
+                  <span class="captain-assignment-dialog__player-avatar captain-assignment-dialog__player-avatar--fallback">
+                    {{ player.name.charAt(0) }}
+                  </span>
+                }
+                <div class="captain-assignment-dialog__player-details">
+                  <span class="captain-assignment-dialog__player-name">{{ player.name }}</span>
+                  <span class="captain-assignment-dialog__player-meta">{{ player.role }} • {{ player.country }}</span>
+                </div>
+              </button>
+            }
+          </div>
+        }
+      }
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    @if (selectedPlayer()) {
+      <button mat-raised-button color="primary" (click)="assignCaptain()" [disabled]="!selectedTeam()">
+        Assign Captain
+      </button>
+    }
+  </mat-dialog-actions>
+</div>

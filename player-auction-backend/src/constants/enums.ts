@@ -19,6 +19,7 @@ export enum PlayerAuctionStatus {
   PENDING = 'PENDING',
   IN_BIDDING = 'IN_BIDDING',
   RETAINED = 'RETAINED',
+  CAPTAIN = 'CAPTAIN',
 }
 
 export enum PlayerRole {

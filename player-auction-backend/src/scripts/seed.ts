@@ -15,7 +15,6 @@ import { UserModel } from '@models/User.model';
 import { TeamModel } from '@models/Team.model';
 import { PlayerModel } from '@models/Player.model';
 import { OwnerModel } from '@models/Owner.model';
-import { CaptainModel } from '@models/Captain.model';
 import { AuctionModel } from '@models/Auction.model';
 import { UserRole, PlayerRole, PlayerAuctionStatus, AuctionStatus, AuctionSelectionMode } from '@constants/enums';
 import { logger } from '@utils/logger';
@@ -33,33 +32,32 @@ const TEAM_SEEDS = [
 const PLAYER_SEEDS: Array<{
   name: string;
   role: PlayerRole;
-  country: string;
-  age: number;
   passingYear: number;
+  age: number;
   previousTeam: string;
   basePrice: number;
   stats: { appearances: number; goals?: number; assists?: number };
 }> = [
-  { name: 'Arjun Mehta', role: PlayerRole.GOALKEEPER, country: 'India', age: 34, passingYear: 2012, previousTeam: 'Blue House', basePrice: 50, stats: { appearances: 40, goals: 0, assists: 1 } },
-  { name: 'Rohan Kapoor', role: PlayerRole.GOALKEEPER, country: 'India', age: 33, passingYear: 2013, previousTeam: 'Red House', basePrice: 45, stats: { appearances: 35 } },
-  { name: 'Vikram Rao', role: PlayerRole.DEFENDER, country: 'India', age: 35, passingYear: 2011, previousTeam: 'Green House', basePrice: 60, stats: { appearances: 50, goals: 3 } },
-  { name: 'Siddharth Iyer', role: PlayerRole.DEFENDER, country: 'India', age: 32, passingYear: 2014, previousTeam: 'Gold House', basePrice: 55, stats: { appearances: 42, goals: 2 } },
-  { name: 'Karan Malhotra', role: PlayerRole.DEFENDER, country: 'India', age: 36, passingYear: 2010, previousTeam: 'Blue House', basePrice: 50, stats: { appearances: 48 } },
-  { name: 'Aditya Bhatt', role: PlayerRole.DEFENDER, country: 'India', age: 31, passingYear: 2015, previousTeam: 'Red House', basePrice: 40, stats: { appearances: 30 } },
-  { name: 'Nikhil Sharma', role: PlayerRole.MIDFIELDER, country: 'India', age: 33, passingYear: 2013, previousTeam: 'Green House', basePrice: 70, stats: { appearances: 55, goals: 8, assists: 12 } },
-  { name: 'Rahul Verma', role: PlayerRole.MIDFIELDER, country: 'India', age: 34, passingYear: 2012, previousTeam: 'Gold House', basePrice: 65, stats: { appearances: 50, goals: 6, assists: 9 } },
-  { name: 'Aman Joshi', role: PlayerRole.MIDFIELDER, country: 'India', age: 32, passingYear: 2014, previousTeam: 'Blue House', basePrice: 60, stats: { appearances: 45, goals: 5, assists: 7 } },
-  { name: 'Varun Nair', role: PlayerRole.MIDFIELDER, country: 'India', age: 35, passingYear: 2011, previousTeam: 'Red House', basePrice: 55, stats: { appearances: 48, goals: 4, assists: 6 } },
-  { name: 'Kabir Singh', role: PlayerRole.MIDFIELDER, country: 'India', age: 30, passingYear: 2016, previousTeam: 'Green House', basePrice: 45, stats: { appearances: 28, goals: 3, assists: 4 } },
-  { name: 'Dev Patel', role: PlayerRole.FORWARD, country: 'India', age: 33, passingYear: 2013, previousTeam: 'Gold House', basePrice: 80, stats: { appearances: 52, goals: 22, assists: 8 } },
-  { name: 'Ishaan Chatterjee', role: PlayerRole.FORWARD, country: 'India', age: 34, passingYear: 2012, previousTeam: 'Blue House', basePrice: 75, stats: { appearances: 49, goals: 19, assists: 6 } },
-  { name: 'Yash Trivedi', role: PlayerRole.FORWARD, country: 'India', age: 31, passingYear: 2015, previousTeam: 'Red House', basePrice: 70, stats: { appearances: 40, goals: 17, assists: 5 } },
-  { name: 'Ansh Kulkarni', role: PlayerRole.FORWARD, country: 'India', age: 32, passingYear: 2014, previousTeam: 'Green House', basePrice: 60, stats: { appearances: 35, goals: 14, assists: 3 } },
-  { name: 'Pranav Desai', role: PlayerRole.FORWARD, country: 'India', age: 36, passingYear: 2010, previousTeam: 'Gold House', basePrice: 50, stats: { appearances: 45, goals: 12, assists: 4 } },
-  { name: 'Manav Reddy', role: PlayerRole.MIDFIELDER, country: 'India', age: 29, passingYear: 2017, previousTeam: 'Blue House', basePrice: 35, stats: { appearances: 22, goals: 2, assists: 3 } },
-  { name: 'Tarun Bose', role: PlayerRole.DEFENDER, country: 'India', age: 30, passingYear: 2016, previousTeam: 'Red House', basePrice: 35, stats: { appearances: 25 } },
-  { name: 'Sameer Ahluwalia', role: PlayerRole.GOALKEEPER, country: 'India', age: 31, passingYear: 2015, previousTeam: 'Green House', basePrice: 40, stats: { appearances: 20 } },
-  { name: 'Harsh Vora', role: PlayerRole.FORWARD, country: 'India', age: 29, passingYear: 2017, previousTeam: 'Gold House', basePrice: 45, stats: { appearances: 18, goals: 9, assists: 2 } },
+  { name: 'Arjun Mehta', role: PlayerRole.GOALKEEPER, passingYear: 2012, age: 34, previousTeam: 'Blue House', basePrice: 50, stats: { appearances: 40, goals: 0, assists: 1 } },
+  { name: 'Rohan Kapoor', role: PlayerRole.GOALKEEPER, passingYear: 2013, age: 33, previousTeam: 'Red House', basePrice: 45, stats: { appearances: 35 } },
+  { name: 'Vikram Rao', role: PlayerRole.DEFENDER, passingYear: 2011, age: 35, previousTeam: 'Green House', basePrice: 60, stats: { appearances: 50, goals: 3 } },
+  { name: 'Siddharth Iyer', role: PlayerRole.DEFENDER, passingYear: 2014, age: 32, previousTeam: 'Gold House', basePrice: 55, stats: { appearances: 42, goals: 2 } },
+  { name: 'Karan Malhotra', role: PlayerRole.DEFENDER, passingYear: 2010, age: 36, previousTeam: 'Blue House', basePrice: 50, stats: { appearances: 48 } },
+  { name: 'Aditya Bhatt', role: PlayerRole.DEFENDER, passingYear: 2015, age: 31, previousTeam: 'Red House', basePrice: 40, stats: { appearances: 30 } },
+  { name: 'Nikhil Sharma', role: PlayerRole.MIDFIELDER, passingYear: 2013, age: 33, previousTeam: 'Green House', basePrice: 70, stats: { appearances: 55, goals: 8, assists: 12 } },
+  { name: 'Rahul Verma', role: PlayerRole.MIDFIELDER, passingYear: 2012, age: 34, previousTeam: 'Gold House', basePrice: 65, stats: { appearances: 50, goals: 6, assists: 9 } },
+  { name: 'Aman Joshi', role: PlayerRole.MIDFIELDER, passingYear: 2014, age: 32, previousTeam: 'Blue House', basePrice: 60, stats: { appearances: 45, goals: 5, assists: 7 } },
+  { name: 'Varun Nair', role: PlayerRole.MIDFIELDER, passingYear: 2011, age: 35, previousTeam: 'Red House', basePrice: 55, stats: { appearances: 48, goals: 4, assists: 6 } },
+  { name: 'Kabir Singh', role: PlayerRole.MIDFIELDER, passingYear: 2016, age: 30, previousTeam: 'Green House', basePrice: 45, stats: { appearances: 28, goals: 3, assists: 4 } },
+  { name: 'Dev Patel', role: PlayerRole.FORWARD, passingYear: 2013, age: 33, previousTeam: 'Gold House', basePrice: 80, stats: { appearances: 52, goals: 22, assists: 8 } },
+  { name: 'Ishaan Chatterjee', role: PlayerRole.FORWARD, passingYear: 2012, age: 34, previousTeam: 'Blue House', basePrice: 75, stats: { appearances: 49, goals: 19, assists: 6 } },
+  { name: 'Yash Trivedi', role: PlayerRole.FORWARD, passingYear: 2015, age: 31, previousTeam: 'Red House', basePrice: 70, stats: { appearances: 40, goals: 17, assists: 5 } },
+  { name: 'Ansh Kulkarni', role: PlayerRole.FORWARD, passingYear: 2014, age: 32, previousTeam: 'Green House', basePrice: 60, stats: { appearances: 35, goals: 14, assists: 3 } },
+  { name: 'Pranav Desai', role: PlayerRole.FORWARD, passingYear: 2010, age: 36, previousTeam: 'Gold House', basePrice: 50, stats: { appearances: 45, goals: 12, assists: 4 } },
+  { name: 'Manav Reddy', role: PlayerRole.MIDFIELDER, passingYear: 2017, age: 29, previousTeam: 'Blue House', basePrice: 35, stats: { appearances: 22, goals: 2, assists: 3 } },
+  { name: 'Tarun Bose', role: PlayerRole.DEFENDER, passingYear: 2016, age: 30, previousTeam: 'Red House', basePrice: 35, stats: { appearances: 25 } },
+  { name: 'Sameer Ahluwalia', role: PlayerRole.GOALKEEPER, passingYear: 2015, age: 31, previousTeam: 'Green House', basePrice: 40, stats: { appearances: 20 } },
+  { name: 'Harsh Vora', role: PlayerRole.FORWARD, passingYear: 2017, age: 29, previousTeam: 'Gold House', basePrice: 45, stats: { appearances: 18, goals: 9, assists: 2 } },
 ];
 
 async function seed(): Promise<void> {
@@ -151,13 +149,6 @@ async function seed(): Promise<void> {
   }
   logger.info('Created owners');
 
-  // 6. Captains (one per team, picked from that team's retained roster)
-  const refreshedTeams = await TeamModel.find({ _id: { $in: teams.map((t) => t._id) } });
-  for (const team of refreshedTeams) {
-    if (team.players.length > 0) {
-      await CaptainModel.create({ team: team._id, player: team.players[0] });
-    }
-  }
   logger.info('Assigned captains');
 
   // 7. Auction — draft, queued with every still-PENDING player

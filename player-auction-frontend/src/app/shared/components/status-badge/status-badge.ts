@@ -18,6 +18,7 @@ const STATUS_CONFIG: Record<PlayerAuctionStatus, BadgeConfig> = {
   SOLD: { label: 'Sold', icon: 'check_circle', variant: 'gold' },
   UNSOLD: { label: 'Unsold', icon: 'cancel', variant: 'danger' },
   RETAINED: { label: 'Retained', icon: 'verified', variant: 'success' },
+  CAPTAIN: { label: 'Captain', icon: 'star', variant: 'success' },
 };
 
 @Component({

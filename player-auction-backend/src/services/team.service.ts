@@ -78,6 +78,29 @@ export class TeamService {
       if (!isOnRoster) {
         throw ApiError.badRequest('Captain must be a player already on this team\'s roster');
       }
+
+      // If there was a previous captain, reset their status to PENDING
+      if (before.captain) {
+        const prevCaptain = await this.playerRepository.findById(before.captain.toString());
+        if (prevCaptain && prevCaptain.auctionStatus === 'CAPTAIN') {
+          await this.playerRepository.updateById(before.captain.toString(), {
+            auctionStatus: 'PENDING',
+          } as never);
+        }
+      }
+
+      // Set new captain's status to CAPTAIN
+      await this.playerRepository.updateById(input.captain, {
+        auctionStatus: 'CAPTAIN',
+      } as never);
+    } else if (input.captain === null && before.captain) {
+      // If captain is being removed, reset their status to PENDING
+      const prevCaptain = await this.playerRepository.findById(before.captain.toString());
+      if (prevCaptain && prevCaptain.auctionStatus === 'CAPTAIN') {
+        await this.playerRepository.updateById(before.captain.toString(), {
+          auctionStatus: 'PENDING',
+        } as never);
+      }
     }
 
     const updated = await this.teamRepository.updateById(teamId, input as Partial<ITeam>);
