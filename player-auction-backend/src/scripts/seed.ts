@@ -6,6 +6,10 @@
  * if run twice without clearing collections first (no upsert-by-name logic —
  * this is throwaway demo data, not production seed tooling).
  */
+import crypto from 'crypto';
+
+(globalThis as typeof globalThis & { crypto: typeof crypto }).crypto = crypto;
+
 import { connectDatabase, disconnectDatabase } from '@config/database';
 import { UserModel } from '@models/User.model';
 import { TeamModel } from '@models/Team.model';
