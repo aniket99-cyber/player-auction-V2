@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../core/services/auth.service';
+import { AdminService } from '../../settings/services/admin.service';
 import { AuctionRoomService } from '../services/auction-room.service';
 import { AuctionRoomStore } from '../services/auction-room.store';
 import { PlayerService } from '../../players/services/player.service';
@@ -28,6 +29,7 @@ export class AuctionRoom implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly auctionRoomService = inject(AuctionRoomService);
+  private readonly adminService = inject(AdminService);
   private readonly playerService = inject(PlayerService);
   private readonly teamService = inject(TeamService);
   private readonly snackBar = inject(MatSnackBar);
@@ -82,6 +84,10 @@ export class AuctionRoom implements OnInit {
     this.auctionId && this.auctionRoomService.skip(this.auctionId).subscribe();
   }
 
+  nextPlayer(): void {
+    this.auctionId && this.auctionRoomService.next(this.auctionId).subscribe();
+  }
+
   undoBid(): void {
     if (!this.auctionId) return;
     this.auctionRoomService.undoBid(this.auctionId);
@@ -111,21 +117,25 @@ export class AuctionRoom implements OnInit {
     if (!player || !this.auctionId) return;
 
     const auctionId = this.auctionId;
-    this.dialog
-      .open<FinalizeDialog, unknown, FinalizeDialogResult>(FinalizeDialog, {
-        data: {
-          player,
-          currentBid: this.store.currentBid(),
-          teams: this.store.teams(),
-        },
-        width: '480px',
-        disableClose: true,
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        if (!result) return;
-        this.auctionRoomService.confirmSale(auctionId, result.teamId).subscribe();
-      });
+    this.adminService.getSettings().subscribe((settings) => {
+      this.dialog
+        .open<FinalizeDialog, unknown, FinalizeDialogResult>(FinalizeDialog, {
+          data: {
+            player,
+            currentBid: this.store.currentBid(),
+            teams: this.store.teams(),
+            requiredPlayersPerTeam: settings.requiredPlayersPerTeam,
+          },
+          width: '480px',
+          disableClose: true,
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result === undefined) return;
+          this.dialog.closeAll();
+          this.auctionRoomService.confirmSale(auctionId, result.teamId).subscribe();
+        });
+    });
   }
 
   private loadInitialState(auctionId: string): void {

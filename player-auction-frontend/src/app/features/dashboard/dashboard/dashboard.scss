@@ -50,5 +50,9 @@
     &--gold {
       color: var(--auction-gold);
     }
+
+    &--success {
+      color: var(--auction-success, #5bc67d);
+    }
   }
 }

@@ -12,6 +12,7 @@ export interface IPlayer extends Document {
   previousTeam?: string;
   basePrice: number;
   imageUrl?: string;
+  imagePublicId?: string;
   stats: {
     appearances: number;
     goals?: number;
@@ -38,6 +39,7 @@ const playerSchema = new Schema<IPlayer>(
     previousTeam: { type: String, trim: true },
     basePrice: { type: Number, required: true, min: 0 },
     imageUrl: { type: String },
+    imagePublicId: { type: String },
     stats: {
       appearances: { type: Number, default: 0 },
       goals: { type: Number },

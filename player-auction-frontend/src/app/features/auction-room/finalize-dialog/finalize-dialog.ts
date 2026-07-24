@@ -9,6 +9,7 @@ export interface FinalizeDialogData {
   player: Player;
   currentBid: { amount: number } | null;
   teams: Team[];
+  requiredPlayersPerTeam: number;
 }
 
 export interface FinalizeDialogResult {
@@ -29,7 +30,8 @@ export class FinalizeDialog {
 
   canAfford(team: Team): boolean {
     const amount = this.data.currentBid?.amount ?? 0;
-    return team.remainingBudget >= amount;
+    const hasRoom = team.players.length < this.data.requiredPlayersPerTeam;
+    return hasRoom && team.remainingBudget >= amount;
   }
 
   selectTeam(teamId: string): void {

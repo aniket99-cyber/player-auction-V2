@@ -20,6 +20,30 @@ interface EnvConfig {
   };
 }
 
+function resolveCloudinaryConfig(): EnvConfig['cloudinary'] {
+  const explicitCloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const explicitApiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const explicitApiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+  const cloudinaryUrl = process.env.CLOUDINARY_URL?.trim();
+
+  if (cloudinaryUrl) {
+    const match = cloudinaryUrl.match(/^cloudinary:\/\/([^:]+):([^@]+)@([^/?#]+)(?:[/?#]|$)/i);
+    if (match) {
+      return {
+        cloudName: decodeURIComponent(match[3]),
+        apiKey: decodeURIComponent(match[1]),
+        apiSecret: decodeURIComponent(match[2]),
+      };
+    }
+  }
+
+  return {
+    cloudName: explicitCloudName ?? '',
+    apiKey: explicitApiKey ?? '',
+    apiSecret: explicitApiSecret ?? '',
+  };
+}
+
 function requireEnv(key: string): string {
   const value = process.env[key];
   if (!value) {
@@ -57,11 +81,7 @@ export const env: EnvConfig = {
     accessExpiry: process.env.JWT_ACCESS_EXPIRY ?? '15m',
     refreshExpiry: process.env.JWT_REFRESH_EXPIRY ?? '7d',
   },
-  cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME ?? '',
-    apiKey: process.env.CLOUDINARY_API_KEY ?? '',
-    apiSecret: process.env.CLOUDINARY_API_SECRET ?? '',
-  },
+  cloudinary: resolveCloudinaryConfig(),
   corsOrigin: (() => {
     const raw = process.env.CORS_ORIGIN?.trim();
     if (!raw || raw === '*') {

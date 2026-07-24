@@ -13,6 +13,7 @@ export class AdminConsole {
   readonly status = input.required<AuctionStatus | null>();
   readonly isBiddingOpen = input.required<boolean>();
   readonly isAwaitingNextRound = input(false);
+  readonly canAdvanceToNextPlayer = input(false);
   readonly round = input(1);
   readonly unsoldCount = input(0);
 
@@ -20,5 +21,6 @@ export class AdminConsole {
   readonly pause = output<void>();
   readonly resume = output<void>();
   readonly skip = output<void>();
+  readonly nextPlayer = output<void>();
   readonly startNextRound = output<void>();
 }

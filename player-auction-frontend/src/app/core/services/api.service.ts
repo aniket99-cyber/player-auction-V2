@@ -4,6 +4,10 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
 type QueryParams = Record<string, string | number | boolean | undefined | null>;
 
 @Injectable({ providedIn: 'root' })
@@ -14,31 +18,72 @@ export class ApiService {
   get<T>(path: string, params?: QueryParams): Observable<T> {
     return this.http
       .get<ApiResponse<T>>(`${this.baseUrl}${path}`, { params: this.toHttpParams(params) })
-      .pipe(map((res) => res.data as T));
+      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
   }
 
   post<T>(path: string, body: unknown): Observable<T> {
     return this.http
       .post<ApiResponse<T>>(`${this.baseUrl}${path}`, body)
-      .pipe(map((res) => res.data as T));
+      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
   }
 
   postFormData<T>(path: string, formData: FormData): Observable<T> {
     return this.http
       .post<ApiResponse<T>>(`${this.baseUrl}${path}`, formData)
-      .pipe(map((res) => res.data as T));
+      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
   }
 
   patch<T>(path: string, body: unknown): Observable<T> {
     return this.http
       .patch<ApiResponse<T>>(`${this.baseUrl}${path}`, body)
-      .pipe(map((res) => res.data as T));
+      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
   }
 
   delete<T>(path: string): Observable<T> {
     return this.http
       .delete<ApiResponse<T>>(`${this.baseUrl}${path}`)
-      .pipe(map((res) => res.data as T));
+      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
+  }
+
+  private normalizeResponseData<T>(data: T): T {
+    if (Array.isArray(data)) {
+      return data.map((item) => this.normalizeResponseData(item)) as T;
+    }
+
+    if (!isRecord(data)) {
+      return data;
+    }
+
+    const normalized = { ...data } as Record<string, unknown>;
+    for (const [key, value] of Object.entries(normalized)) {
+      if (key === 'imageUrl' && typeof value === 'string') {
+        normalized[key] = this.normalizeImageUrl(value);
+        continue;
+      }
+
+      if (isRecord(value) || Array.isArray(value)) {
+        normalized[key] = this.normalizeResponseData(value);
+      }
+    }
+
+    return normalized as T;
+  }
+
+  private normalizeImageUrl(value: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return value;
+    }
+
+    if (/^(https?:)?\/\//i.test(trimmed) || trimmed.startsWith('data:')) {
+      return trimmed;
+    }
+
+    if (trimmed.startsWith('/')) {
+      return trimmed;
+    }
+
+    return `${this.baseUrl.replace(/\/api\/v1$/, '')}/${trimmed}`;
   }
 
   private toHttpParams(params?: QueryParams): HttpParams {

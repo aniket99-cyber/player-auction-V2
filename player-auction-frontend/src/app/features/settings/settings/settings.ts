@@ -33,6 +33,7 @@ export class Settings implements OnInit {
 
   readonly budgetForm = this.fb.nonNullable.group({
     defaultTeamBudget: [1000, [Validators.required, Validators.min(0)]],
+    requiredPlayersPerTeam: [4, [Validators.required, Validators.min(1)]],
   });
 
   readonly tiersForm = this.fb.nonNullable.group({
@@ -45,7 +46,10 @@ export class Settings implements OnInit {
 
   ngOnInit(): void {
     this.adminService.getSettings().subscribe((settings) => {
-      this.budgetForm.patchValue({ defaultTeamBudget: settings.defaultTeamBudget });
+      this.budgetForm.patchValue({
+        defaultTeamBudget: settings.defaultTeamBudget,
+        requiredPlayersPerTeam: settings.requiredPlayersPerTeam,
+      });
       settings.defaultBidIncrementRules
         .sort((a, b) => a.upTo - b.upTo)
         .forEach((rule) => this.tiers.push(this.createTierGroup(rule.upTo, rule.increment)));
@@ -78,12 +82,13 @@ export class Settings implements OnInit {
     }
 
     this.isSavingBudget.set(true);
+    const { defaultTeamBudget, requiredPlayersPerTeam } = this.budgetForm.getRawValue();
     this.adminService
-      .updateSettings({ defaultTeamBudget: this.budgetForm.getRawValue().defaultTeamBudget })
+      .updateSettings({ defaultTeamBudget, requiredPlayersPerTeam })
       .subscribe({
         next: () => {
           this.isSavingBudget.set(false);
-          this.snackBar.open('Default team points saved', 'Close', { duration: 3000 });
+          this.snackBar.open('Default team points and roster size saved', 'Close', { duration: 3000 });
         },
         error: () => this.isSavingBudget.set(false),
       });

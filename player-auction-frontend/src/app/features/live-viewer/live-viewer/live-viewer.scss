@@ -2,6 +2,7 @@
 // base (unprefixed) rules target small screens; wider layouts are additive
 // enhancements behind min-width queries, never the default.
 .live-viewer {
+  position: relative;
   min-height: 100vh;
   background: var(--auction-bg-canvas);
   color: var(--auction-text-primary);
@@ -10,6 +11,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-top: 16px;
 
   &__header {
     display: flex;
@@ -78,6 +82,110 @@
     }
   }
 
+  &__announcement {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1200;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
+    width: min(92vw, 560px);
+    padding: 14px 16px 12px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(5, 18, 29, 0.96), rgba(9, 31, 49, 0.94));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+  }
+
+  &__announcement--unsold {
+    background: linear-gradient(135deg, rgba(59, 13, 13, 0.96), rgba(88, 17, 17, 0.94));
+  }
+
+  &__announcement-player,
+  &__announcement-team {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__announcement-copy {
+    min-width: 0;
+  }
+
+  &__announcement-badge {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--auction-accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  &__announcement-title {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  &__announcement-body {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  &__announcement-team {
+    flex-direction: column;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    gap: 2px;
+    font-size: 10px;
+    text-align: center;
+    padding: 4px;
+    strong {
+      font-size: 9px;
+      line-height: 1.1;
+      color: #fff;
+    }
+  }
+
+  &__announcement-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--auction-accent), #73f2ff);
+    animation: announcement-progress 2.8s linear forwards;
+  }
+
   &__round-banner {
     padding: 10px 16px;
     border-radius: 12px;
@@ -116,6 +224,11 @@
   50% { opacity: 0.4; }
 }
 
+@keyframes announcement-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 // Tablet and up: current-bid value grows, still single column.
 @media (min-width: 600px) {
   .live-viewer {
@@ -127,8 +240,8 @@
   }
 }
 
-// Desktop: two-column layout — stage/progress/leaderboard/history on the
-// left, teams/activity/statistics on the right.
+// Desktop: two-column layout — the main card and activity stay together on the
+// left while teams and statistics sit on the right.
 @media (min-width: 1024px) {
   .live-viewer {
     display: grid;
@@ -136,9 +249,9 @@
     grid-template-areas:
       'header header'
       'stage teams'
-      'progress teams'
-      'leaderboard activity'
-      'history statistics';
+      'activity teams'
+      'progress statistics'
+      'leaderboard statistics';
     align-content: start;
     max-width: 1400px;
     margin: 0 auto;
@@ -146,13 +259,10 @@
 
     &__header { grid-area: header; }
     &__stage { grid-area: stage; }
+    &__activity { grid-area: activity; }
+    &__progress { grid-area: progress; }
+    &__leaderboard { grid-area: leaderboard; }
+    &__teams { grid-area: teams; }
+    &__statistics { grid-area: statistics; }
   }
-
-  .live-viewer__section:nth-of-type(1) { grid-area: stage; }
-  .live-viewer__section:nth-of-type(2) { grid-area: progress; }
-  .live-viewer__section:nth-of-type(3) { grid-area: leaderboard; }
-  .live-viewer__section:nth-of-type(4) { grid-area: history; }
-  .live-viewer__section:nth-of-type(5) { grid-area: teams; }
-  .live-viewer__section:nth-of-type(6) { grid-area: activity; }
-  .live-viewer__section:nth-of-type(7) { grid-area: statistics; }
 }

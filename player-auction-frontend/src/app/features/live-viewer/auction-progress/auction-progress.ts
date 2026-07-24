@@ -9,8 +9,9 @@ import gsap from 'gsap';
 })
 export class AuctionProgress {
   readonly remainingInPool = input.required<number>();
-  readonly soldThisSession = input.required<number>();
-  readonly unsoldThisSession = input.required<number>();
+  readonly soldCount = input.required<number>();
+  readonly unsoldCount = input.required<number>();
+  readonly retainedCount = input.required<number>();
 
   private readonly soldValueRef = viewChild<ElementRef<HTMLElement>>('soldValue');
   private readonly unsoldValueRef = viewChild<ElementRef<HTMLElement>>('unsoldValue');
@@ -20,7 +21,7 @@ export class AuctionProgress {
 
   constructor() {
     effect(() => {
-      this.soldThisSession();
+      this.soldCount();
       if (this.isFirstSoldRun) {
         this.isFirstSoldRun = false;
         return;
@@ -28,7 +29,7 @@ export class AuctionProgress {
       this.pulse(this.soldValueRef());
     });
     effect(() => {
-      this.unsoldThisSession();
+      this.unsoldCount();
       if (this.isFirstUnsoldRun) {
         this.isFirstUnsoldRun = false;
         return;

@@ -16,11 +16,13 @@ export interface SessionResetSummary {
 export interface Settings {
   id: string;
   defaultTeamBudget: number;
+  requiredPlayersPerTeam: number;
   defaultBidIncrementRules: BidIncrementRule[];
 }
 
 export interface UpdateSettingsRequest {
   defaultTeamBudget?: number;
+  requiredPlayersPerTeam?: number;
   defaultBidIncrementRules?: BidIncrementRule[];
 }
 

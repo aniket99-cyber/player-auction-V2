@@ -4,32 +4,36 @@
   <div class="dashboard__stats">
     <div class="stat-card">
       <span class="stat-card__label">Total Players</span>
-      <span class="stat-card__value">0</span>
+      <span class="stat-card__value">{{ totalPlayers() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-card__label">Players Sold</span>
-      <span class="stat-card__value stat-card__value--gold">0</span>
+      <span class="stat-card__value stat-card__value--gold">{{ playersSold() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card__label">Players Retained</span>
+      <span class="stat-card__value stat-card__value--success">{{ playersRetained() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-card__label">Active Teams</span>
-      <span class="stat-card__value">0</span>
+      <span class="stat-card__value">{{ activeTeams() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-card__label">Total Spend</span>
-      <span class="stat-card__value">₹0</span>
+      <span class="stat-card__value">₹{{ totalSpend() }}</span>
     </div>
   </div>
 
   <div class="dashboard__chart-panel">
     <h2>Budget Spend Trend</h2>
     <apx-chart
-      [series]="spendChartOptions.series"
-      [chart]="spendChartOptions.chart"
-      [xaxis]="spendChartOptions.xaxis"
-      [dataLabels]="spendChartOptions.dataLabels"
-      [stroke]="spendChartOptions.stroke"
-      [grid]="spendChartOptions.grid"
-      [colors]="spendChartOptions.colors"
+      [series]="spendChartOptions().series"
+      [chart]="spendChartOptions().chart"
+      [xaxis]="spendChartOptions().xaxis"
+      [dataLabels]="spendChartOptions().dataLabels"
+      [stroke]="spendChartOptions().stroke"
+      [grid]="spendChartOptions().grid"
+      [colors]="spendChartOptions().colors"
     />
   </div>
 </div>

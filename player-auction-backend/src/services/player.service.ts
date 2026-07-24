@@ -1,4 +1,5 @@
 import { ApiError } from '@utils/ApiError';
+import { logger } from '@utils/logger';
 import { eventBus } from '@events/EventBus';
 import { IPlayer } from '@models/Player.model';
 import { PlayerAuctionStatus, PlayerRole } from '@constants/enums';
@@ -30,6 +31,7 @@ interface UpdatePlayerInput {
   previousTeam?: string;
   basePrice?: number;
   imageUrl?: string;
+  imagePublicId?: string;
   stats?: CreatePlayerInput['stats'];
 }
 
@@ -39,6 +41,26 @@ export class PlayerService {
     private readonly auditLogRepository: IAuditLogRepository,
   ) {}
 
+  private async recordAuditLog(entry: {
+    actor: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    before?: Record<string, unknown>;
+    after?: Record<string, unknown>;
+  }): Promise<void> {
+    try {
+      await this.auditLogRepository.record(entry);
+    } catch (error) {
+      logger.warn('Failed to record audit log', {
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        error: error instanceof Error ? error.message : error,
+      });
+    }
+  }
+
   async createPlayer(input: CreatePlayerInput, actorId: string): Promise<IPlayer> {
     const player = await this.playerRepository.create({
       ...input,
@@ -46,7 +68,7 @@ export class PlayerService {
       isRetained: false,
     } as never);
 
-    await this.auditLogRepository.record({
+    await this.recordAuditLog({
       actor: actorId,
       action: 'player.created',
       entityType: 'Player',
@@ -69,7 +91,7 @@ export class PlayerService {
       throw ApiError.notFound('Player not found');
     }
 
-    await this.auditLogRepository.record({
+    await this.recordAuditLog({
       actor: actorId,
       action: 'player.updated',
       entityType: 'Player',
@@ -90,7 +112,7 @@ export class PlayerService {
 
     await this.playerRepository.softDelete(playerId, actorId);
 
-    await this.auditLogRepository.record({
+    await this.recordAuditLog({
       actor: actorId,
       action: 'player.deleted',
       entityType: 'Player',
@@ -112,7 +134,7 @@ export class PlayerService {
       throw ApiError.notFound('Player not found');
     }
 
-    await this.auditLogRepository.record({
+    await this.recordAuditLog({
       actor: actorId,
       action: 'player.restored',
       entityType: 'Player',
@@ -131,7 +153,7 @@ export class PlayerService {
   async bulkUpdateStatus(playerIds: string[], isDeleted: boolean, actorId: string): Promise<number> {
     const modifiedCount = await this.playerRepository.bulkUpdateStatus(playerIds, isDeleted);
 
-    await this.auditLogRepository.record({
+    await this.recordAuditLog({
       actor: actorId,
       action: isDeleted ? 'player.bulkDeleted' : 'player.bulkRestored',
       entityType: 'Player',
@@ -150,7 +172,7 @@ export class PlayerService {
   ): Promise<number> {
     const modifiedCount = await this.playerRepository.bulkUpdateAuctionStatus(playerIds, auctionStatus);
 
-    await this.auditLogRepository.record({
+    await this.recordAuditLog({
       actor: actorId,
       action: 'player.bulkAuctionStatusChanged',
       entityType: 'Player',

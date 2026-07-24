@@ -19,6 +19,13 @@
             <mat-error>Required</mat-error>
           }
         </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Required Players Per Team</mat-label>
+          <input matInput type="number" formControlName="requiredPlayersPerTeam" />
+          @if (budgetForm.controls.requiredPlayersPerTeam.hasError('required')) {
+            <mat-error>Required</mat-error>
+          }
+        </mat-form-field>
         <button mat-flat-button color="primary" type="submit" [disabled]="isSavingBudget()">
           Save
         </button>

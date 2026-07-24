@@ -6,6 +6,7 @@ import { BidRepository } from '@repositories/implementations/BidRepository';
 import { TeamRepository } from '@repositories/implementations/TeamRepository';
 import { PlayerRepository } from '@repositories/implementations/PlayerRepository';
 import { AuditLogRepository } from '@repositories/implementations/AuditLogRepository';
+import { SettingsRepository } from '@repositories/implementations/SettingsRepository';
 import { validate } from '@middleware/validate.middleware';
 import { authenticate, authorize } from '@middleware/auth.middleware';
 import { createAuctionSchema, updateAuctionQueueSchema } from '@validators/auction.validator';
@@ -20,6 +21,7 @@ export const auctionService = new AuctionService(
   new TeamRepository(),
   new PlayerRepository(),
   new AuditLogRepository(),
+  new SettingsRepository(),
 );
 const auctionController = new AuctionController(auctionService, auctionRepository, new BidRepository());
 

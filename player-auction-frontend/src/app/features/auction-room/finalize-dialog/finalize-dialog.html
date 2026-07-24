@@ -14,7 +14,13 @@
           {{ team.name }} — {{ team.remainingBudget }} left
         </mat-radio-button>
         @if (!canAfford(team)) {
-          <span class="finalize-dialog__insufficient">Insufficient budget</span>
+          <span class="finalize-dialog__insufficient">
+            @if (team.players.length >= data.requiredPlayersPerTeam) {
+              Roster full
+            } @else {
+              Insufficient budget
+            }
+          </span>
         }
       </label>
     }

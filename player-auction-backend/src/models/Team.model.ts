@@ -14,6 +14,7 @@ export interface ITeam extends Document {
   name: string;
   shortName: string;
   logoUrl?: string;
+  logoPublicId?: string;
   primaryColor: string;
   secondaryColor: string;
   owner?: Types.ObjectId;
@@ -48,6 +49,7 @@ const teamSchema = new Schema<ITeam>(
     name: { type: String, required: true, trim: true },
     shortName: { type: String, required: true, uppercase: true, trim: true, maxlength: 5 },
     logoUrl: { type: String },
+    logoPublicId: { type: String },
     primaryColor: {
       type: String,
       required: true,

@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Player } from '../../../core/models';
+import { Player, PlayerAuctionStatus } from '../../../core/models';
 
 export interface ActivityEntry {
   id: string;
@@ -12,21 +12,19 @@ export interface ActivityEntry {
 
 const MAX_ACTIVITY = 15;
 
-// All counts here are scoped to what this viewer has witnessed live since
-// connecting — Player records don't reference the auction they were sold
-// in, so there's no accurate way to query historical totals for "this
-// auction" specifically. Only `remainingInPool` (read from the auction
-// document's live playerQueue) is an all-time-accurate, server-authoritative
-// number regardless of when the viewer joined.
 @Injectable({ providedIn: 'root' })
 export class LiveViewerStore {
   readonly remainingInPool = signal(0);
+  readonly soldCount = signal(0);
+  readonly unsoldCount = signal(0);
+  readonly retainedCount = signal(0);
   readonly soldThisSession = signal(0);
   readonly unsoldThisSession = signal(0);
   readonly activity = signal<ActivityEntry[]>([]);
   readonly roster = signal<Player[]>([]);
 
   readonly totalResolvedThisSession = computed(() => this.soldThisSession() + this.unsoldThisSession());
+  readonly totalResolved = computed(() => this.soldCount() + this.unsoldCount());
 
   rosterFor(playerIds: string[]): Player[] {
     const ids = new Set(playerIds);
@@ -44,7 +42,22 @@ export class LiveViewerStore {
     });
   }
 
+  setAuctionTotals(players: Player[]): void {
+    const sold = players.filter(
+      (p) => p.auctionStatus === PlayerAuctionStatus.SOLD || p.auctionStatus === PlayerAuctionStatus.RETAINED,
+    ).length;
+    const unsold = players.filter((p) => p.auctionStatus === PlayerAuctionStatus.UNSOLD).length;
+    const retained = players.filter(
+      (p) => p.auctionStatus === PlayerAuctionStatus.RETAINED || p.isRetained,
+    ).length;
+
+    this.soldCount.set(sold);
+    this.unsoldCount.set(unsold);
+    this.retainedCount.set(retained);
+  }
+
   recordSold(player: Player, teamId: string, finalPrice: number): void {
+    this.soldCount.update((n) => n + 1);
     this.soldThisSession.update((n) => n + 1);
     this.pushActivity({
       id: `${player.id}-${Date.now()}`,
@@ -57,6 +70,7 @@ export class LiveViewerStore {
   }
 
   recordUnsold(player: Player): void {
+    this.unsoldCount.update((n) => n + 1);
     this.unsoldThisSession.update((n) => n + 1);
     this.pushActivity({
       id: `${player.id}-${Date.now()}`,
@@ -84,6 +98,9 @@ export class LiveViewerStore {
 
   reset(): void {
     this.remainingInPool.set(0);
+    this.soldCount.set(0);
+    this.unsoldCount.set(0);
+    this.retainedCount.set(0);
     this.soldThisSession.set(0);
     this.unsoldThisSession.set(0);
     this.activity.set([]);

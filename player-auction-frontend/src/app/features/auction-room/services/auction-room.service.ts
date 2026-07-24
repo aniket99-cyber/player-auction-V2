@@ -62,6 +62,10 @@ export class AuctionRoomService {
     return this.api.post<void>(`/auctions/${auctionId}/finalize`, {});
   }
 
+  next(auctionId: string): Observable<void> {
+    return this.api.post<void>(`/auctions/${auctionId}/next`, {});
+  }
+
   /** The actual decision: sell to `teamId`, or pass `null` to mark unsold. */
   confirmSale(auctionId: string, teamId: string | null): Observable<void> {
     return this.api.post<void>(`/auctions/${auctionId}/confirm-sale`, { teamId });

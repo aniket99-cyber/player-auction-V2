@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, OnInit, inject, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
@@ -16,6 +16,15 @@ import { LatestActivity } from '../latest-activity/latest-activity';
 import { TeamsPanel } from '../teams-panel/teams-panel';
 import { Statistics } from '../statistics/statistics';
 
+interface LiveAnnouncement {
+  title: string;
+  body: string;
+  playerImage?: string;
+  teamLogo?: string;
+  teamName: string;
+  outcome: 'SOLD' | 'UNSOLD';
+}
+
 @Component({
   selector: 'app-live-viewer',
   imports: [PlayerStage, Leaderboard, AuctionProgress, LatestActivity, TeamsPanel, Statistics],
@@ -32,10 +41,13 @@ export class LiveViewer implements OnInit {
   readonly store = inject(AuctionRoomStore);
   readonly viewerStore = inject(LiveViewerStore);
   readonly connected = this.auctionRoomService.isConnected();
+  readonly highlightedTeamId = signal<string | null>(null);
+  readonly announcement = signal<LiveAnnouncement | null>(null);
 
   private readonly rootRef = viewChild<ElementRef<HTMLElement>>('root');
 
   private auctionId: string | null = null;
+  private announcementTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   ngOnInit(): void {
     const auctionId = this.route.snapshot.paramMap.get('auctionId');
@@ -49,6 +61,11 @@ export class LiveViewer implements OnInit {
     this.subscribeToRealtimeEvents();
 
     this.destroyRef.onDestroy(() => {
+      if (this.announcementTimer) {
+        clearTimeout(this.announcementTimer);
+        this.announcementTimer = null;
+      }
+      this.announcement.set(null);
       this.auctionRoomService.leave(auctionId);
       this.auctionRoomService.disconnectRealtime();
       this.store.reset();
@@ -77,10 +94,20 @@ export class LiveViewer implements OnInit {
         this.store.loadFromAuction(auction, currentPlayer, teams.data);
         this.viewerStore.setRemainingInPool(auction.playerQueue.length);
 
-        const allPlayerIds = teams.data.flatMap((t) => t.players);
+        const allPlayerIds = [
+          ...new Set([
+            ...auction.playerQueue,
+            ...auction.unsoldThisRound,
+            ...(auction.currentPlayer ? [auction.currentPlayer] : []),
+            ...teams.data.flatMap((t) => t.players),
+            ...teams.data.flatMap((t) => t.retentions.map((entry) => entry.player)),
+          ]),
+        ];
+
         if (allPlayerIds.length > 0) {
           this.playerService.getByIds(allPlayerIds).subscribe((result) => {
             this.viewerStore.setRoster(result.data);
+            this.viewerStore.setAuctionTotals(result.data);
           });
         }
 
@@ -126,7 +153,21 @@ export class LiveViewer implements OnInit {
         this.viewerStore.recordSold(player, teamId, finalPrice);
         this.viewerStore.upsertRosterPlayer(player);
         this.store.addPlayerToTeam(teamId, player.id);
-        setTimeout(() => this.store.applyPlayerSettled(), 1500);
+        this.highlightedTeamId.set(teamId);
+        const team = this.store.teams().find((entry) => entry.id === teamId);
+        this.showAnnouncement({
+          title: player.name,
+          body: `${player.name} is sold to ${team?.name ?? 'the selected team'} at ${finalPrice}`,
+          playerImage: player.imageUrl,
+          teamLogo: team?.logoUrl,
+          teamName: team?.name ?? 'Selected Team',
+          outcome: 'SOLD',
+        });
+        this.playSoldAnimation(teamId);
+        setTimeout(() => {
+          this.store.applyPlayerSettled();
+          this.highlightedTeamId.set(null);
+        }, 1500);
       });
 
     this.auctionRoomService
@@ -134,6 +175,13 @@ export class LiveViewer implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ player }) => {
         this.viewerStore.recordUnsold(player);
+        this.showAnnouncement({
+          title: player.name,
+          body: `${player.name} remains unsold in this round.`,
+          playerImage: player.imageUrl,
+          teamName: 'No Team',
+          outcome: 'UNSOLD',
+        });
         this.store.applyPlayerSettled();
       });
 
@@ -146,6 +194,53 @@ export class LiveViewer implements OnInit {
       });
   }
 
+  private showAnnouncement(announcement: LiveAnnouncement): void {
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+      this.announcementTimer = null;
+    }
+
+    this.announcement.set(announcement);
+    this.playAnnouncementAnimation();
+    this.announcementTimer = window.setTimeout(() => {
+      this.announcement.set(null);
+      this.announcementTimer = null;
+    }, 2800);
+  }
+
+  private playAnnouncementAnimation(): void {
+    const root = this.rootRef()?.nativeElement;
+    if (!root) return;
+
+    const panel = root.querySelector('.live-viewer__announcement');
+    const playerMedia = root.querySelector('.live-viewer__announcement-player');
+    const teamBadge = root.querySelector('.live-viewer__announcement-team');
+
+    if (!panel) return;
+
+    gsap.fromTo(
+      panel,
+      { x: -260, opacity: 0, scale: 0.95 },
+      { x: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'back.out(1.4)' },
+    );
+
+    if (playerMedia) {
+      gsap.fromTo(
+        playerMedia,
+        { x: -70, opacity: 0, scale: 0.9 },
+        { x: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' },
+      );
+    }
+
+    if (teamBadge) {
+      gsap.fromTo(
+        teamBadge,
+        { x: 70, opacity: 0, scale: 0.88 },
+        { x: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.3)' },
+      );
+    }
+  }
+
   private playEntranceAnimation(): void {
     const el = this.rootRef()?.nativeElement;
     if (!el) return;
@@ -155,5 +250,29 @@ export class LiveViewer implements OnInit {
       { opacity: 0, y: 16 },
       { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'power2.out' },
     );
+  }
+
+  private playSoldAnimation(teamId: string): void {
+    const root = this.rootRef()?.nativeElement;
+    if (!root) return;
+
+    const playerCard = root.querySelector('.player-card');
+    const teamCard = root.querySelector(`.team-field-card--active`);
+
+    if (playerCard) {
+      gsap.fromTo(
+        playerCard,
+        { scale: 1, opacity: 1 },
+        { scale: 1.05, opacity: 0.92, duration: 0.3, yoyo: true, repeat: 1, ease: 'power1.inOut' },
+      );
+    }
+
+    if (teamCard) {
+      gsap.fromTo(
+        teamCard,
+        { boxShadow: '0 0 0 rgba(255,255,255,0)', y: 0 },
+        { boxShadow: '0 0 28px rgba(92, 201, 255, 0.35)', y: -4, duration: 0.45, ease: 'power2.out' },
+      );
+    }
   }
 }

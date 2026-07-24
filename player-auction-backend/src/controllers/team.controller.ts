@@ -88,12 +88,17 @@ export class TeamController {
       throw ApiError.badRequest('No image file provided');
     }
 
-    const logoUrl = await uploadBufferToCloudinary(req.file.buffer, {
-      folder: 'player-auction/team-logos',
+    const { secureUrl, publicId } = await uploadBufferToCloudinary(req.file.buffer, {
+      folder: 'teams',
       publicId: req.params.id,
+      originalName: req.file.originalname,
     });
 
-    const team = await this.teamService.updateTeam(req.params.id, { logoUrl }, req.user.sub);
+    const team = await this.teamService.updateTeam(
+      req.params.id,
+      { logoUrl: secureUrl, logoPublicId: publicId },
+      req.user.sub,
+    );
     res.status(200).json(new ApiResponse('Logo uploaded', team));
   };
 

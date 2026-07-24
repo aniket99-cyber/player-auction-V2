@@ -1,6 +1,11 @@
+import { webcrypto } from 'node:crypto';
 import mongoose from 'mongoose';
 import { env } from '@config/env';
 import { logger } from '@utils/logger';
+
+if (typeof globalThis.crypto === 'undefined') {
+  (globalThis as typeof globalThis & { crypto: Crypto }).crypto = webcrypto as unknown as Crypto;
+}
 
 export async function connectDatabase(): Promise<void> {
   mongoose.set('strictQuery', true);

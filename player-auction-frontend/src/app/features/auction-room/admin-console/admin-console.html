@@ -29,6 +29,13 @@
         Skip Player
       </button>
     }
+
+    @if (canAdvanceToNextPlayer()) {
+      <button mat-flat-button color="primary" (click)="nextPlayer.emit()">
+        <mat-icon>play_arrow</mat-icon>
+        Next Player
+      </button>
+    }
   </div>
 
   @if (isAwaitingNextRound()) {

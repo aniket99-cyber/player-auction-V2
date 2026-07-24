@@ -1,15 +1,19 @@
 <div class="auction-progress">
   <div class="auction-progress__stat">
-    <span #soldValue class="auction-progress__value auction-progress__value--sold">{{ soldThisSession() }}</span>
+    <span #soldValue class="auction-progress__value auction-progress__value--sold">{{ soldCount() }}</span>
     <span class="auction-progress__label">Sold</span>
   </div>
   <div class="auction-progress__stat">
-    <span #unsoldValue class="auction-progress__value auction-progress__value--unsold">{{ unsoldThisSession() }}</span>
+    <span #unsoldValue class="auction-progress__value auction-progress__value--unsold">{{ unsoldCount() }}</span>
     <span class="auction-progress__label">Unsold</span>
+  </div>
+  <div class="auction-progress__stat">
+    <span class="auction-progress__value">{{ retainedCount() }}</span>
+    <span class="auction-progress__label">Retained</span>
   </div>
   <div class="auction-progress__stat">
     <span class="auction-progress__value">{{ remainingInPool() }}</span>
     <span class="auction-progress__label">Remaining</span>
   </div>
-  <span class="auction-progress__hint">Sold/Unsold counts reflect this session</span>
+  <span class="auction-progress__hint">Live auction progress from current totals</span>
 </div>

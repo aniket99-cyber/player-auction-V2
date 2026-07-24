@@ -4,7 +4,13 @@ import { ISettingsRepository } from '@repositories/interfaces/ISettingsRepositor
 export class SettingsRepository implements ISettingsRepository {
   async getOrCreate(): Promise<ISettings> {
     const existing = await SettingsModel.findOne({}).exec();
-    if (existing) return existing;
+    if (existing) {
+      if (existing.requiredPlayersPerTeam == null) {
+        existing.requiredPlayersPerTeam = 4;
+        await existing.save();
+      }
+      return existing;
+    }
 
     const created = new SettingsModel({});
     return created.save();
@@ -12,6 +18,7 @@ export class SettingsRepository implements ISettingsRepository {
 
   async update(data: {
     defaultTeamBudget?: number;
+    requiredPlayersPerTeam?: number;
     defaultBidIncrementRules?: IBidIncrementRule[];
   }): Promise<ISettings> {
     const updated = await SettingsModel.findOneAndUpdate({}, data, {

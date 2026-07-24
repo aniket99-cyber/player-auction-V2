@@ -102,12 +102,17 @@ export class PlayerController {
       throw ApiError.badRequest('No image file provided');
     }
 
-    const imageUrl = await uploadBufferToCloudinary(req.file.buffer, {
-      folder: 'player-auction/player-images',
+    const { secureUrl, publicId } = await uploadBufferToCloudinary(req.file.buffer, {
+      folder: 'players',
       publicId: req.params.id,
+      originalName: req.file.originalname,
     });
 
-    const player = await this.playerService.updatePlayer(req.params.id, { imageUrl }, req.user.sub);
+    const player = await this.playerService.updatePlayer(
+      req.params.id,
+      { imageUrl: secureUrl, imagePublicId: publicId },
+      req.user.sub,
+    );
     res.status(200).json(new ApiResponse('Image uploaded', player));
   };
 

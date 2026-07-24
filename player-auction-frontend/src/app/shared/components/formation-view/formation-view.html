@@ -1,30 +1,79 @@
-<div class="formation">
-  @if (rows().length === 0) {
-    <p class="formation__empty">No players in the squad yet.</p>
-  } @else {
-    @for (row of rows(); track row.role) {
-      <div class="formation__row">
-        <span class="formation__row-label">{{ row.label }}</span>
-        <div class="formation__row-players">
-          @for (player of row.players; track player.id) {
-            <div
-              class="formation__chip"
-              [class.formation__chip--captain]="player.id === captainId()"
-              [style.borderColor]="primaryColor()"
-            >
-              @if (player.id === captainId()) {
-                <span class="formation__chip-badge">C</span>
-              }
-              @if (player.imageUrl) {
-                <img [src]="player.imageUrl" [alt]="player.name" />
-              } @else {
-                <span class="formation__chip-initial">{{ player.name.charAt(0) }}</span>
-              }
-              <span class="formation__chip-name">{{ player.name }}</span>
-            </div>
-          }
+<div class="formation" [style.--formation-accent]="primaryColor()">
+  <div class="formation__pitch">
+    <div class="formation__pitch-line formation__pitch-line--top"></div>
+    <div class="formation__pitch-line formation__pitch-line--bottom"></div>
+    <div class="formation__pitch-line formation__pitch-line--center"></div>
+
+    @if (ownerName() || teamName()) {
+      <div class="formation__owner-card">
+        @if (ownerImage()) {
+          <button
+            type="button"
+            class="formation__preview-trigger"
+            [class.formation__preview-trigger--enabled]="enableImagePreview()"
+            (click)="openImagePreview(ownerImage()!, ownerName() || teamName() || 'Owner')"
+            [attr.aria-label]="'View larger image for ' + (ownerName() || teamName() || 'Owner')"
+          >
+            <img class="formation__owner-avatar" [src]="ownerImage()" [alt]="ownerName() || teamName() || 'Owner'" />
+          </button>
+        } @else {
+          <span class="formation__owner-avatar formation__owner-avatar--fallback">{{ (ownerName() || teamName() || 'O').charAt(0) }}</span>
+        }
+        <div class="formation__owner-meta">
+          <span class="formation__owner-label">Owner</span>
+          <span class="formation__owner-name">{{ ownerName() || teamName() }}</span>
         </div>
       </div>
     }
+
+    @if (rows().length === 0) {
+      <p class="formation__empty">No players in the squad yet.</p>
+    } @else {
+      <div class="formation__rows">
+        @for (row of rows(); track row.role) {
+          <div class="formation__row">
+            <span class="formation__row-label">{{ row.label }}</span>
+            <div class="formation__row-players">
+              @for (player of row.players; track player.id) {
+                <div
+                  class="formation__chip"
+                  [class.formation__chip--captain]="player.id === captainId()"
+                >
+                  @if (player.id === captainId()) {
+                    <span class="formation__chip-badge">C</span>
+                  }
+                  @if (player.imageUrl) {
+                    <button
+                      type="button"
+                      class="formation__preview-trigger"
+                      [class.formation__preview-trigger--enabled]="enableImagePreview()"
+                      (click)="openImagePreview(player.imageUrl, player.name)"
+                      [attr.aria-label]="'View larger image for ' + player.name"
+                    >
+                      <img [src]="player.imageUrl" [alt]="player.name" />
+                    </button>
+                  } @else {
+                    <span class="formation__chip-initial">{{ player.name.charAt(0) }}</span>
+                  }
+                  <span class="formation__chip-name">{{ player.name }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (selectedImage()) {
+    <div class="formation__modal-backdrop" (click)="closeImagePreview()">
+      <div class="formation__modal" (click)="$event.stopPropagation()">
+        <button type="button" class="formation__modal-close" (click)="closeImagePreview()" aria-label="Close preview">
+          ×
+        </button>
+        <img class="formation__modal-image" [src]="selectedImage()" [alt]="selectedAlt()" />
+        <span class="formation__modal-caption">{{ selectedAlt() }}</span>
+      </div>
+    </div>
   }
 </div>

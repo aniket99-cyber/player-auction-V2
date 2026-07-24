@@ -47,12 +47,14 @@
           [status]="store.auctionStatus()"
           [isBiddingOpen]="store.isBiddingOpen()"
           [isAwaitingNextRound]="store.isAwaitingNextRound()"
+          [canAdvanceToNextPlayer]="!store.currentPlayer() && (store.auctionStatus() === 'LIVE' || store.auctionStatus() === 'PAUSED') && !store.isFinalizing() && !store.isAwaitingNextRound()"
           [round]="store.round()"
           [unsoldCount]="store.awaitingNextRoundUnsoldCount()"
           (start)="start()"
           (pause)="pause()"
           (resume)="resume()"
           (skip)="skip()"
+          (nextPlayer)="nextPlayer()"
           (startNextRound)="startNextRound()"
         />
       }

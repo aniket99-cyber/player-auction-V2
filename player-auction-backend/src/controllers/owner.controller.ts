@@ -45,12 +45,16 @@ export class OwnerController {
   uploadImage = async (req: Request, res: Response): Promise<void> => {
     if (!req.file) throw ApiError.badRequest('No image file provided');
 
-    const imageUrl = await uploadBufferToCloudinary(req.file.buffer, {
-      folder: 'player-auction/owner-images',
+    const { secureUrl, publicId } = await uploadBufferToCloudinary(req.file.buffer, {
+      folder: 'owners',
       publicId: req.params.id,
+      originalName: req.file.originalname,
     });
 
-    const owner = await this.ownerRepository.updateById(req.params.id, { imageUrl } as never);
+    const owner = await this.ownerRepository.updateById(
+      req.params.id,
+      { imageUrl: secureUrl, imagePublicId: publicId } as never,
+    );
     if (!owner) throw ApiError.notFound('Owner not found');
     res.status(200).json(new ApiResponse('Image uploaded', owner));
   };

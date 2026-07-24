@@ -14,6 +14,7 @@ export interface IBidIncrementRule {
 export interface ISettings extends Document {
   _id: Types.ObjectId;
   defaultTeamBudget: number;
+  requiredPlayersPerTeam: number;
   defaultBidIncrementRules: IBidIncrementRule[];
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +31,7 @@ const bidIncrementRuleSchema = new Schema<IBidIncrementRule>(
 const settingsSchema = new Schema<ISettings>(
   {
     defaultTeamBudget: { type: Number, required: true, min: 0, default: 1000 },
+    requiredPlayersPerTeam: { type: Number, required: true, min: 1, default: 4 },
     defaultBidIncrementRules: {
       type: [bidIncrementRuleSchema],
       required: true,

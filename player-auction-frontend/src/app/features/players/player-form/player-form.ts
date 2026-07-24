@@ -108,7 +108,12 @@ export class PlayerForm implements OnInit {
   private handleSaved(player: Player): void {
     if (this.pendingImageFile) {
       this.playerService.uploadImage(player.id, this.pendingImageFile).subscribe({
-        next: () => this.finishSubmit(player.id),
+        next: (updatedPlayer) => {
+          if (updatedPlayer.imageUrl) {
+            this.imagePreviewUrl.set(updatedPlayer.imageUrl);
+          }
+          this.finishSubmit(player.id);
+        },
         error: () => this.finishSubmit(player.id),
       });
     } else {

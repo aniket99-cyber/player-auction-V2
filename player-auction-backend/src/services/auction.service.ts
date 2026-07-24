@@ -1,20 +1,21 @@
 import { randomInt } from 'node:crypto';
+import { Types } from 'mongoose';
 import { ApiError } from '@utils/ApiError';
 import { logger } from '@utils/logger';
 import { eventBus } from '@events/EventBus';
 import { IAuction } from '@models/Auction.model';
 import { IPlayer } from '@models/Player.model';
 import { AuctionPlayerState, AuctionSelectionMode, AuctionStatus, PlayerAuctionStatus, UserRole } from '@constants/enums';
+import { ISettingsRepository } from '@repositories/interfaces/ISettingsRepository';
 import { IAuctionRepository } from '@repositories/interfaces/IAuctionRepository';
 import { ITeamRepository } from '@repositories/interfaces/ITeamRepository';
 import { IPlayerRepository } from '@repositories/interfaces/IPlayerRepository';
 import { IAuditLogRepository } from '@repositories/interfaces/IAuditLogRepository';
+import { ITeam } from '@models/Team.model';
 
 // Timings tuned to match the client's GSAP animation timeline (design §16):
-// the wheel-spin/reveal runs ~3.5-4s before bidding opens, and a brief
-// settling delay lets the sold/unsold animation play before the next player.
+// the wheel-spin/reveal runs ~3.5-4s before bidding opens.
 const SELECTION_ANIMATION_MS = 4000;
-const SETTLING_DELAY_MS = 2500;
 
 export class AuctionService {
   private readonly pendingTimeouts = new Map<string, NodeJS.Timeout>();
@@ -29,6 +30,7 @@ export class AuctionService {
     private readonly teamRepository: ITeamRepository,
     private readonly playerRepository: IPlayerRepository,
     private readonly auditLogRepository: IAuditLogRepository,
+    private readonly settingsRepository: ISettingsRepository,
   ) {}
 
   async startAuction(auctionId: string, actorId: string): Promise<void> {
@@ -264,7 +266,8 @@ export class AuctionService {
    * pass `null` to mark unsold. This is the only place team assignment
    * happens in the whole bidding flow. If nobody ever bumped the bid,
    * selling to a team charges the player's base price instead of blocking
-   * the sale.
+   * the sale. Once the result is confirmed, the auction pauses on the
+   * settled player until the admin explicitly advances to the next one.
    */
   async confirmSale(auctionId: string, actorId: string, teamId: string | null): Promise<void> {
     const auction = await this.requireAuction(auctionId);
@@ -285,6 +288,19 @@ export class AuctionService {
       }
 
       const amount = auction.currentBid?.amount ?? player.basePrice;
+      const settings = await this.settingsRepository.getOrCreate();
+      const team = await this.teamRepository.findById(teamId);
+      if (!team) {
+        throw ApiError.notFound('Team not found');
+      }
+
+      await this.assertTeamCanBuy(
+        team,
+        amount,
+        settings.requiredPlayersPerTeam,
+        [...auction.playerQueue, ...auction.unsoldThisRound],
+      );
+
       const updatedTeam = await this.teamRepository.deductBudget(teamId, amount);
       if (!updatedTeam) {
         throw ApiError.badRequest('That team cannot afford this bid — pick another team or mark unsold');
@@ -318,9 +334,45 @@ export class AuctionService {
     }
 
     await this.auctionRepository.advanceToNextPlayer(auctionId, null, null);
+    await this.auctionRepository.setStatus(auctionId, AuctionStatus.PAUSED);
+    eventBus.emit('auction.paused', { auctionId });
+  }
 
-    if (auction.settings.autoAdvance) {
-      this.scheduleNextPlayerAfterSettling(auctionId);
+  private async assertTeamCanBuy(
+    team: ITeam,
+    amount: number,
+    requiredPlayersPerTeam: number,
+    remainingQueue: Array<string | Types.ObjectId>,
+  ): Promise<void> {
+    if (team.players.length >= requiredPlayersPerTeam) {
+      throw ApiError.badRequest(
+        `Team already has ${team.players.length} players and cannot exceed the required ${requiredPlayersPerTeam} roster spots`,
+      );
+    }
+
+    const remainingSlots = requiredPlayersPerTeam - team.players.length - 1;
+    if (remainingSlots <= 0) {
+      return;
+    }
+
+    if (remainingQueue.length < remainingSlots) {
+      throw ApiError.badRequest(
+        `Team cannot guarantee the remaining ${remainingSlots} required player${remainingSlots === 1 ? '' : 's'} because there are only ${remainingQueue.length} players left in the auction queue`,
+      );
+    }
+
+    const futurePlayers = await this.playerRepository.findMany({ _id: { $in: remainingQueue } });
+    const cheapestFuturePrices = futurePlayers
+      .map((p) => p.basePrice)
+      .sort((a, b) => a - b)
+      .slice(0, remainingSlots);
+    const minimumFutureSpend = cheapestFuturePrices.reduce((sum, price) => sum + price, 0);
+
+    const remainingBudgetAfterPurchase = team.remainingBudget - amount;
+    if (remainingBudgetAfterPurchase < minimumFutureSpend) {
+      throw ApiError.badRequest(
+        'That team cannot afford the remaining required squad spots after this purchase — choose another team or mark unsold',
+      );
     }
   }
 
@@ -440,16 +492,6 @@ export class AuctionService {
         logger.error('Failed to begin bidding after selection', { auctionId, playerId, err }),
       );
     }, SELECTION_ANIMATION_MS);
-    this.pendingTimeouts.set(auctionId, timeout);
-  }
-
-  private scheduleNextPlayerAfterSettling(auctionId: string): void {
-    this.clearPendingTimeout(auctionId);
-    const timeout = setTimeout(() => {
-      this.selectNextPlayer(auctionId).catch((err) =>
-        logger.error('Failed to select next player after settling', { auctionId, err }),
-      );
-    }, SETTLING_DELAY_MS);
     this.pendingTimeouts.set(auctionId, timeout);
   }
 

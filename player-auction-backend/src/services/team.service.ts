@@ -20,6 +20,7 @@ interface UpdateTeamInput {
   name?: string;
   shortName?: string;
   logoUrl?: string;
+  logoPublicId?: string;
   primaryColor?: string;
   secondaryColor?: string;
   captain?: string;

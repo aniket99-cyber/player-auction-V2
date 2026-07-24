@@ -10,8 +10,8 @@
 
     <div class="team-field-card__info">
       <span class="team-field-card__name">{{ team().name }}</span>
-      @if (team().ownerName) {
-        <span class="team-field-card__owner">Owner: {{ team().ownerName }}</span>
+      @if (owner()?.name || team().ownerName) {
+        <span class="team-field-card__owner">Owner: {{ owner()?.name ?? team().ownerName ?? team().name }}</span>
       }
       @if (captainName(); as name) {
         <span class="team-field-card__captain">Captain: {{ name }}</span>
@@ -34,6 +34,10 @@
         [players]="roster()"
         [primaryColor]="team().primaryColor"
         [captainId]="team().captain"
+        [teamName]="team().name"
+        [ownerName]="owner()?.name ?? team().ownerName ?? team().name"
+        [ownerImage]="owner()?.imageUrl"
+        [enableImagePreview]="true"
       />
     </div>
   }
