@@ -6,6 +6,7 @@ interface EnvConfig {
   nodeEnv: string;
   port: number;
   mongodbUri: string;
+  corsOrigin: boolean | string[];
   jwt: {
     accessSecret: string;
     refreshSecret: string;
@@ -17,7 +18,6 @@ interface EnvConfig {
     apiKey: string;
     apiSecret: string;
   };
-  corsOrigin: string;
 }
 
 function requireEnv(key: string): string {
@@ -62,5 +62,15 @@ export const env: EnvConfig = {
     apiKey: process.env.CLOUDINARY_API_KEY ?? '',
     apiSecret: process.env.CLOUDINARY_API_SECRET ?? '',
   },
-  corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
+  corsOrigin: (() => {
+    const raw = process.env.CORS_ORIGIN?.trim();
+    if (!raw || raw === '*') {
+      return true;
+    }
+
+    return raw
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+  })(),
 };
