@@ -1,5 +1,5 @@
 import path from 'node:path';
-import moduleAlias from 'module-alias';
+import { addAlias } from 'module-alias';
 
 const currentDir = __dirname;
 
@@ -19,5 +19,5 @@ const aliases = {
 };
 
 Object.entries(aliases).forEach(([alias, target]) => {
-  moduleAlias.addAlias(alias, target);
+  addAlias(alias, target);
 });
