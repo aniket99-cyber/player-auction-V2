@@ -18,8 +18,17 @@ async function bootstrap(): Promise<void> {
 
   const io = new Server(httpServer, {
     cors: {
-      origin: env.corsOrigin,
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        if (!origin || origin === 'null') {
+          callback(null, true);
+          return;
+        }
+
+        callback(null, true);
+      },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     },
   });
 

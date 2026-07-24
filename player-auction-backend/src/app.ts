@@ -12,13 +12,23 @@ import { errorHandler, notFoundHandler } from '@middleware/errorHandler';
 export function createApp(): Application {
   const app = express();
 
+  const corsConfig = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin || origin === 'null') {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  };
+
   app.use(helmet());
-  app.use(
-    cors({
-      origin: env.corsOrigin,
-      credentials: true,
-    }),
-  );
+  app.use(cors(corsConfig));
+  app.options('*', cors(corsConfig));
   app.use(compression());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
