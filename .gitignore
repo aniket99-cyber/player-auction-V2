@@ -16,7 +16,9 @@
 player-auction-backend/dist/
 
 # Environment files
-/.env
+**/.env
+**/.env.local
+**/.env.*.local
 
 # Angular CLI and build artefacts
 /.angular-cli.json
