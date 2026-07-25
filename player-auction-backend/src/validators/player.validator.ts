@@ -14,6 +14,7 @@ export const createPlayerSchema = Joi.object({
   role: Joi.string()
     .valid(...Object.values(PlayerRole))
     .required(),
+  country: Joi.string().trim().min(2).max(100).required(),
   passingYear: Joi.number().integer().min(1950).max(2100).required(),
   age: Joi.number().integer().min(14).max(60).optional(),
   previousTeam: Joi.string().trim().max(100).optional(),
@@ -27,6 +28,7 @@ export const updatePlayerSchema = Joi.object({
   role: Joi.string()
     .valid(...Object.values(PlayerRole))
     .optional(),
+  country: Joi.string().trim().min(2).max(100).optional(),
   passingYear: Joi.number().integer().min(1950).max(2100).optional(),
   age: Joi.number().integer().min(14).max(60).optional(),
   previousTeam: Joi.string().trim().max(100).optional(),

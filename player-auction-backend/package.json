@@ -10,6 +10,7 @@
     "seed": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed.ts",
     "reset-players": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/reset-players.ts",
     "seed-fresh-players": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed-fresh-players.ts",
+    "seed-india": "ts-node --transpile-only -r tsconfig-paths/register src/scripts/seed-india.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
