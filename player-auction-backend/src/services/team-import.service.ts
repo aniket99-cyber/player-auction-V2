@@ -23,7 +23,6 @@ interface RowError {
   errors: string[];
 }
 
-const REQUIRED_COLUMNS = ['name'] as const;
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
 
 const COLUMN_MAP: Record<string, string> = {
@@ -158,6 +157,7 @@ export class TeamImportService {
               after: { count: teams.length, names: teams.map((t) => t.name) },
             });
           }
+          return null;
         })
         .catch(() => { /* audit failure must not surface as a 500 */ })
         .finally(() => {

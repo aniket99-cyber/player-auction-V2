@@ -26,8 +26,6 @@ interface RowError {
   errors: string[];
 }
 
-const REQUIRED_COLUMNS = ['name'] as const;
-const VALID_ROLES = new Set(['GOALKEEPER', 'GK', 'DEFENDER', 'DEF', 'MIDFIELDER', 'MID', 'FORWARD', 'FWD', 'STRIKER']);
 const COLUMN_MAP: Record<string, string> = {
   name: 'name',
   player: 'name',
@@ -232,6 +230,7 @@ export class PlayerImportService {
               after: { count: players.length, names: players.map((p) => p.name) },
             });
           }
+          return null;
         })
         .catch(() => { /* audit failure must not surface as a 500 */ })
         .finally(() => {
