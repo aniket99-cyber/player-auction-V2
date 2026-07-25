@@ -58,8 +58,8 @@ export class RetainPlayerDialog implements OnInit {
     this.teamService
       .addRetention(value.team, {
         playerId: this.data.player.id,
-        retentionPrice: value.retentionPrice,
-        retentionOrder: value.retentionOrder,
+        retentionPrice: Number(value.retentionPrice),
+        retentionOrder: Number(value.retentionOrder),
       })
       .subscribe({
         next: (team) => {

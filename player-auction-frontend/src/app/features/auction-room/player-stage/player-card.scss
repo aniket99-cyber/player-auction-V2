@@ -1,6 +1,14 @@
+// The host element (app-player-card) defaults to `display: inline` which
+// breaks grid containment — force it to be a full block that fills its cell.
+:host {
+  display: block;
+  width: 100%;
+}
+
 .player-card {
   width: 100%;
   max-width: 420px;
+  margin: 0 auto;
   padding: 40px;
   border-radius: 24px;
   background: var(--auction-glass-fill);
@@ -12,6 +20,7 @@
   align-items: center;
   gap: 12px;
   text-align: center;
+  box-sizing: border-box;
 
   &--silver {
     border-image: linear-gradient(135deg, #c9ced9, #8a92a3) 1;
@@ -107,8 +116,8 @@
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 1024px) {
-    max-width: 360px;
+  @media (max-width: 1140px) {
+    max-width: 100%;
     padding: 28px 24px;
 
     .player-card__photo {

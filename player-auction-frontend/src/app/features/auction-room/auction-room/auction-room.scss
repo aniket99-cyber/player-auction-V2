@@ -7,7 +7,7 @@
   position: relative;
   transition: background 300ms ease;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 1140px) {
     padding: 16px;
     gap: 16px;
   }
@@ -55,11 +55,11 @@
 
   &__layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
     gap: 24px;
     align-items: start;
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1140px) {
       grid-template-columns: 1fr;
       gap: 20px;
     }
@@ -69,6 +69,7 @@
     display: flex;
     justify-content: center;
     width: 100%;
+    overflow: hidden;
   }
 
   &__controls {
@@ -105,7 +106,7 @@
     color: var(--auction-accent);
     text-shadow: var(--auction-shadow-glow-accent);
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1140px) {
       font-size: 46px;
     }
 

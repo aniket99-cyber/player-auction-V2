@@ -50,5 +50,9 @@
     padding: 24px;
     height: calc(100vh - 64px);
     overflow-y: auto;
+
+    @media (max-width: 1024px) {
+      padding: 0;
+    }
   }
 }

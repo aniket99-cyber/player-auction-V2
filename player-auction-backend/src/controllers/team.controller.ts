@@ -107,12 +107,13 @@ export class TeamController {
     const team = await this.teamService.addRetention({
       teamId: req.params.id,
       playerId: req.body.playerId,
-      retentionPrice: req.body.retentionPrice,
-      retentionOrder: req.body.retentionOrder,
+      retentionPrice: Number(req.body.retentionPrice),
+      retentionOrder: Number(req.body.retentionOrder),
       approvedBy: req.user.sub,
     });
     res.status(200).json(new ApiResponse('Retention added', team));
   };
+
 
   softDelete = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) throw ApiError.unauthorized();

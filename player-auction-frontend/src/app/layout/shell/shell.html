@@ -1,5 +1,10 @@
 <mat-sidenav-container class="shell">
-  <mat-sidenav mode="side" opened class="shell__sidenav">
+  <mat-sidenav
+    #sidenav
+    class="shell__sidenav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+  >
     <div class="shell__brand">
       <mat-icon>sports_soccer</mat-icon>
       <span>Player Auction</span>
@@ -7,7 +12,7 @@
 
     <mat-nav-list>
       @for (item of navItems(); track item.route) {
-        <a mat-list-item [routerLink]="item.route" routerLinkActive="shell__nav-item--active">
+        <a mat-list-item [routerLink]="item.route" routerLinkActive="shell__nav-item--active" (click)="closeIfHandset()">
           <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
           <span matListItemTitle>{{ item.label }}</span>
         </a>
@@ -17,6 +22,11 @@
 
   <mat-sidenav-content class="shell__content">
     <mat-toolbar class="shell__toolbar">
+      @if (isHandset()) {
+        <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle menu">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
       <span class="shell__spacer"></span>
       @if (currentUser(); as user) {
         <span class="shell__user">{{ user.name }}</span>
