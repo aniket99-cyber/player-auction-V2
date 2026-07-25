@@ -28,6 +28,7 @@ const auctionController = new AuctionController(auctionService, auctionRepositor
 // Public reads: the Live Viewer needs auction state and bid history with no
 // login. Every mutating/lifecycle route below stays behind `authenticate`.
 router.get('/', asyncHandler(auctionController.list));
+router.get('/active', asyncHandler(auctionController.getActive));
 router.post(
   '/',
   authenticate,
@@ -35,6 +36,9 @@ router.post(
   validate(createAuctionSchema),
   asyncHandler(auctionController.create),
 );
+
+router.post('/:id/activate', authenticate, authorize(UserRole.ADMIN), asyncHandler(auctionController.activate));
+router.post('/:id/deactivate', authenticate, authorize(UserRole.ADMIN), asyncHandler(auctionController.deactivate));
 
 router.get('/:id', asyncHandler(auctionController.getById));
 router.patch(

@@ -32,10 +32,34 @@ export class AuctionList implements OnInit {
     this.router.navigate(['/auction-room', auction.id]);
   }
 
-  copyViewerLink(auction: Auction): void {
-    const url = `${window.location.origin}/watch/${auction.id}`;
+  toggleActive(auction: Auction): void {
+    if (auction.isActive) {
+      this.auctionService.deactivate(auction.id).subscribe({
+        next: () => {
+          this.snackBar.open(`"${auction.name}" is now inactive`, 'Close', { duration: 3000 });
+          this.fetch();
+        },
+        error: () => {
+          this.snackBar.open('Failed to deactivate auction', 'Close', { duration: 3000 });
+        },
+      });
+    } else {
+      this.auctionService.activate(auction.id).subscribe({
+        next: () => {
+          this.snackBar.open(`"${auction.name}" is now ACTIVE for live view`, 'Close', { duration: 3000 });
+          this.fetch();
+        },
+        error: () => {
+          this.snackBar.open('Failed to activate auction', 'Close', { duration: 3000 });
+        },
+      });
+    }
+  }
+
+  copyViewerLink(): void {
+    const url = `${window.location.origin}/live`;
     navigator.clipboard.writeText(url).then(() => {
-      this.snackBar.open('Viewer link copied', 'Close', { duration: 3000 });
+      this.snackBar.open('Live Viewer link copied to clipboard', 'Close', { duration: 3000 });
     });
   }
 

@@ -113,4 +113,8 @@ export function registerAuctionGateway(io: Server): void {
   eventBus.on('auction.roundStarted', ({ auctionId, round }) => {
     auctionNamespace.to(auctionRoom(auctionId)).emit('auction:roundStarted', { round });
   });
+
+  eventBus.on('auction.activeChanged', ({ activeAuctionId }) => {
+    auctionNamespace.emit('auction:activeChanged', { activeAuctionId });
+  });
 }

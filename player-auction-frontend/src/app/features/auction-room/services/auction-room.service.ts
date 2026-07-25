@@ -170,4 +170,8 @@ export class AuctionRoomService {
   onRoundStarted(): Observable<{ round: number }> {
     return this.socketService.on<{ round: number }>(AUCTION_NAMESPACE, 'auction:roundStarted');
   }
+
+  onActiveAuctionChanged(): Observable<{ activeAuctionId: string | null }> {
+    return this.socketService.on<{ activeAuctionId: string | null }>(AUCTION_NAMESPACE, 'auction:activeChanged');
+  }
 }

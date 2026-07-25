@@ -27,5 +27,8 @@ export interface IAuctionRepository extends IRepository<IAuction> {
    * unsold list, and bumps `round` — the atomic transition into the next
    * re-auction round.
    */
+  findActive(): Promise<IAuction | null>;
+  activate(auctionId: string): Promise<IAuction | null>;
+  deactivate(auctionId: string): Promise<IAuction | null>;
   startNextRound(auctionId: string): Promise<IAuction | null>;
 }

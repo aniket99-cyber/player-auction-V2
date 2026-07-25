@@ -55,6 +55,9 @@
                   } @else {
                     <span class="formation__chip-initial">{{ player.name.charAt(0) }}</span>
                   }
+                  @if (player.soldPrice !== undefined && player.soldPrice !== null && player.soldPrice > 0) {
+                    <span class="formation__chip-price">{{ player.soldPrice }} pts</span>
+                  }
                   <span class="formation__chip-name">{{ player.name }}</span>
                 </div>
               }

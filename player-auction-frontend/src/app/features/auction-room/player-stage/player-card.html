@@ -16,24 +16,6 @@
     · Class of {{ player().passingYear }}
   </span>
 
-  <div class="player-card__stats">
-    <div class="player-card__stat">
-      <span class="player-card__stat-value">{{ player().stats.appearances }}</span>
-      <span class="player-card__stat-label">Appearances</span>
-    </div>
-    @if (player().stats.goals !== undefined) {
-      <div class="player-card__stat">
-        <span class="player-card__stat-value">{{ player().stats.goals }}</span>
-        <span class="player-card__stat-label">Goals</span>
-      </div>
-    }
-    @if (player().stats.assists !== undefined) {
-      <div class="player-card__stat">
-        <span class="player-card__stat-value">{{ player().stats.assists }}</span>
-        <span class="player-card__stat-label">Assists</span>
-      </div>
-    }
-  </div>
 
   <div class="player-card__base-price">
     <span class="player-card__base-price-label">Base Price</span>

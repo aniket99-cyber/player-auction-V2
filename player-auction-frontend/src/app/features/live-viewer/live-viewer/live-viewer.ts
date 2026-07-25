@@ -4,11 +4,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import gsap from 'gsap';
+import { AuctionService } from '../../auctions/services/auction.service';
 import { AuctionRoomService } from '../../auction-room/services/auction-room.service';
 import { AuctionRoomStore } from '../../auction-room/services/auction-room.store';
 import { LiveViewerStore } from '../services/live-viewer.store';
 import { PlayerService } from '../../players/services/player.service';
 import { TeamService } from '../../teams/services/team.service';
+import { PlayerAuctionStatus } from '../../../core/models';
 import { PlayerStage } from '../../auction-room/player-stage/player-stage';
 import { Leaderboard } from '../leaderboard/leaderboard';
 import { AuctionProgress } from '../auction-progress/auction-progress';
@@ -33,6 +35,7 @@ interface LiveAnnouncement {
 })
 export class LiveViewer implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly auctionService = inject(AuctionService);
   private readonly auctionRoomService = inject(AuctionRoomService);
   private readonly playerService = inject(PlayerService);
   private readonly teamService = inject(TeamService);
@@ -44,21 +47,25 @@ export class LiveViewer implements OnInit {
   readonly highlightedTeamId = signal<string | null>(null);
   readonly announcement = signal<LiveAnnouncement | null>(null);
 
+  readonly hasActiveAuction = signal(false);
+  readonly isLoading = signal(true);
+
   private readonly rootRef = viewChild<ElementRef<HTMLElement>>('root');
 
-  private auctionId: string | null = null;
+  private currentAuctionId: string | null = null;
   private announcementTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   ngOnInit(): void {
-    const auctionId = this.route.snapshot.paramMap.get('auctionId');
-    if (!auctionId) return;
-
-    this.auctionId = auctionId;
-    this.loadInitialState(auctionId);
-
     this.auctionRoomService.connectRealtime();
-    this.auctionRoomService.join(auctionId);
-    this.subscribeToRealtimeEvents();
+    this.subscribeToActiveRoomChanges();
+
+    const paramAuctionId = this.route.snapshot.paramMap.get('auctionId');
+    if (paramAuctionId) {
+      this.hasActiveAuction.set(true);
+      this.connectToAuction(paramAuctionId);
+    } else {
+      this.fetchActiveAuction();
+    }
 
     this.destroyRef.onDestroy(() => {
       if (this.announcementTimer) {
@@ -66,11 +73,66 @@ export class LiveViewer implements OnInit {
         this.announcementTimer = null;
       }
       this.announcement.set(null);
-      this.auctionRoomService.leave(auctionId);
+      if (this.currentAuctionId) {
+        this.auctionRoomService.leave(this.currentAuctionId);
+      }
       this.auctionRoomService.disconnectRealtime();
       this.store.reset();
       this.viewerStore.reset();
     });
+  }
+
+  private fetchActiveAuction(): void {
+    this.isLoading.set(true);
+    this.auctionService.getActive().subscribe({
+      next: (activeAuction) => {
+        if (activeAuction && activeAuction.id) {
+          this.hasActiveAuction.set(true);
+          this.connectToAuction(activeAuction.id);
+        } else {
+          this.hasActiveAuction.set(false);
+          this.isLoading.set(false);
+        }
+      },
+      error: () => {
+        this.hasActiveAuction.set(false);
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  private connectToAuction(auctionId: string): void {
+    if (this.currentAuctionId && this.currentAuctionId !== auctionId) {
+      this.auctionRoomService.leave(this.currentAuctionId);
+      this.store.reset();
+      this.viewerStore.reset();
+    }
+
+    this.currentAuctionId = auctionId;
+    this.loadInitialState(auctionId);
+    this.auctionRoomService.join(auctionId);
+    this.subscribeToRealtimeEvents();
+  }
+
+  private subscribeToActiveRoomChanges(): void {
+    this.auctionRoomService
+      .onActiveAuctionChanged()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ activeAuctionId }) => {
+        if (activeAuctionId) {
+          this.hasActiveAuction.set(true);
+          this.connectToAuction(activeAuctionId);
+        } else {
+          if (this.currentAuctionId) {
+            this.auctionRoomService.leave(this.currentAuctionId);
+            this.currentAuctionId = null;
+          }
+          this.store.reset();
+          this.viewerStore.reset();
+          this.hasActiveAuction.set(false);
+          this.isLoading.set(false);
+        }
+      });
   }
 
   private loadInitialState(auctionId: string): void {
@@ -90,28 +152,34 @@ export class LiveViewer implements OnInit {
           }),
         ),
       )
-      .subscribe(({ auction, currentPlayer, teams }) => {
-        this.store.loadFromAuction(auction, currentPlayer, teams.data);
-        this.viewerStore.setRemainingInPool(auction.playerQueue.length);
+      .subscribe({
+        next: ({ auction, currentPlayer, teams }) => {
+          this.store.loadFromAuction(auction, currentPlayer, teams.data);
+          this.viewerStore.setRemainingInPool(auction.playerQueue.length);
 
-        const allPlayerIds = [
-          ...new Set([
-            ...auction.playerQueue,
-            ...auction.unsoldThisRound,
-            ...(auction.currentPlayer ? [auction.currentPlayer] : []),
-            ...teams.data.flatMap((t) => t.players),
-            ...teams.data.flatMap((t) => t.retentions.map((entry) => entry.player)),
-          ]),
-        ];
+          const allPlayerIds = [
+            ...new Set([
+              ...auction.playerQueue,
+              ...auction.unsoldThisRound,
+              ...(auction.currentPlayer ? [auction.currentPlayer] : []),
+              ...teams.data.flatMap((t) => t.players),
+              ...teams.data.flatMap((t) => t.retentions.map((entry) => entry.player)),
+            ]),
+          ];
 
-        if (allPlayerIds.length > 0) {
-          this.playerService.getByIds(allPlayerIds).subscribe((result) => {
-            this.viewerStore.setRoster(result.data);
-            this.viewerStore.setAuctionTotals(result.data);
-          });
-        }
+          if (allPlayerIds.length > 0) {
+            this.playerService.getByIds(allPlayerIds).subscribe((result) => {
+              this.viewerStore.setRoster(result.data);
+              this.viewerStore.setAuctionTotals(result.data);
+            });
+          }
 
-        this.playEntranceAnimation();
+          this.isLoading.set(false);
+          this.playEntranceAnimation();
+        },
+        error: () => {
+          this.isLoading.set(false);
+        },
       });
   }
 
@@ -150,8 +218,14 @@ export class LiveViewer implements OnInit {
       .onPlayerSold()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ player, teamId, finalPrice }) => {
-        this.viewerStore.recordSold(player, teamId, finalPrice);
-        this.viewerStore.upsertRosterPlayer(player);
+        const soldPlayer = {
+          ...player,
+          soldTo: teamId,
+          soldPrice: finalPrice,
+          auctionStatus: PlayerAuctionStatus.SOLD,
+        };
+        this.viewerStore.recordSold(soldPlayer, teamId, finalPrice);
+        this.viewerStore.upsertRosterPlayer(soldPlayer);
         this.store.addPlayerToTeam(teamId, player.id);
         this.highlightedTeamId.set(teamId);
         const team = this.store.teams().find((entry) => entry.id === teamId);

@@ -7,6 +7,7 @@ import { PlayerRepository } from '@repositories/implementations/PlayerRepository
 import { ApiResponse } from '@utils/ApiResponse';
 import { ApiError } from '@utils/ApiError';
 import { AuctionSelectionMode, AuctionStatus, PlayerAuctionStatus } from '@constants/enums';
+import { eventBus } from '@events/EventBus';
 
 export class AuctionController {
   constructor(
@@ -26,6 +27,29 @@ export class AuctionController {
     });
 
     res.status(200).json(new ApiResponse('Auctions retrieved', result));
+  };
+
+  getActive = async (req: Request, res: Response): Promise<void> => {
+    const auction = await this.auctionRepository.findActive();
+    res.status(200).json(new ApiResponse('Active auction retrieved', auction));
+  };
+
+  activate = async (req: Request, res: Response): Promise<void> => {
+    const auction = await this.auctionRepository.activate(req.params.id);
+    if (!auction) {
+      throw ApiError.notFound('Auction not found');
+    }
+    eventBus.emit('auction.activeChanged', { activeAuctionId: auction._id.toString() });
+    res.status(200).json(new ApiResponse('Auction activated', auction));
+  };
+
+  deactivate = async (req: Request, res: Response): Promise<void> => {
+    const auction = await this.auctionRepository.deactivate(req.params.id);
+    if (!auction) {
+      throw ApiError.notFound('Auction not found');
+    }
+    eventBus.emit('auction.activeChanged', { activeAuctionId: null });
+    res.status(200).json(new ApiResponse('Auction deactivated', auction));
   };
 
   getById = async (req: Request, res: Response): Promise<void> => {

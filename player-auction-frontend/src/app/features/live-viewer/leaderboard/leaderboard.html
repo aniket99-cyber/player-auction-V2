@@ -1,25 +1,40 @@
 <div class="leaderboard">
   <h3 class="leaderboard__title">Leaderboard</h3>
   <div class="leaderboard__list">
-    @for (team of ranked(); track team.id) {
+    @for (player of ranked(); track player.id) {
       <div
         class="leaderboard__row"
-        [class.leaderboard__row--active]="team.id === highlightedTeamId()"
-        [class.leaderboard__row--top]="team.rank === 1"
+        [class.leaderboard__row--active]="player.id === highlightedPlayerId()"
+        [class.leaderboard__row--top]="player.rank === 1"
       >
-        <span class="leaderboard__rank">{{ team.rank }}</span>
-        <div class="leaderboard__crest" [style.background]="team.primaryColor">
-          @if (team.logoUrl) {
-            <img [src]="team.logoUrl" [alt]="team.name" />
+        <span class="leaderboard__rank">{{ player.rank }}</span>
+
+        <div class="leaderboard__player-avatar">
+          @if (player.imageUrl) {
+            <img [src]="player.imageUrl" [alt]="player.name" />
           } @else {
-            {{ team.shortName }}
+            <span>{{ player.name.charAt(0) }}</span>
           }
         </div>
+
         <div class="leaderboard__info">
-          <span class="leaderboard__name">{{ team.name }}</span>
-          <span class="leaderboard__meta">{{ team.players.length }} players</span>
+          <span class="leaderboard__name">{{ player.name }}</span>
+          <div class="leaderboard__team-tag">
+            @if (player.teamLogoUrl) {
+              <img [src]="player.teamLogoUrl" [alt]="player.teamName || ''" class="leaderboard__team-logo" />
+            }
+            <span class="leaderboard__team-name">{{ player.teamName || 'Sold Player' }}</span>
+          </div>
         </div>
-        <span class="leaderboard__spent">{{ team.spent }}</span>
+
+        <div class="leaderboard__price-block">
+          <span class="leaderboard__spent">{{ player.soldPrice }}</span>
+          <span class="leaderboard__unit">pts</span>
+        </div>
+      </div>
+    } @empty {
+      <div class="leaderboard__empty">
+        <span>No players sold yet</span>
       </div>
     }
   </div>

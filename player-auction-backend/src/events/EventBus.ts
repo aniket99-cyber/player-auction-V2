@@ -17,6 +17,7 @@ export interface DomainEventMap {
   'auction.teamBudgetUpdated': { auctionId: string; teamId: string; remainingBudget: number };
   'auction.awaitingNextRound': { auctionId: string; round: number; unsoldCount: number };
   'auction.roundStarted': { auctionId: string; round: number };
+  'auction.activeChanged': { activeAuctionId: string | null };
   'team.created': { team: ITeam };
   'team.updated': { team: ITeam };
   'team.deleted': { teamId: string };

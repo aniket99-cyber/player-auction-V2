@@ -6,6 +6,7 @@ export interface IAuction extends Document {
   _id: Types.ObjectId;
   name: string;
   status: AuctionStatus;
+  isActive: boolean;
   playerQueue: Types.ObjectId[];
   currentPlayer?: Types.ObjectId;
   playerState?: AuctionPlayerState;
@@ -36,6 +37,7 @@ const auctionSchema = new Schema<IAuction>(
   {
     name: { type: String, required: true, trim: true },
     status: { type: String, enum: Object.values(AuctionStatus), default: AuctionStatus.DRAFT },
+    isActive: { type: Boolean, default: false, index: true },
     playerQueue: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
     currentPlayer: { type: Schema.Types.ObjectId, ref: 'Player' },
     playerState: { type: String, enum: Object.values(AuctionPlayerState) },

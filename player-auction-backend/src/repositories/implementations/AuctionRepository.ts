@@ -64,10 +64,26 @@ export class AuctionRepository extends BaseRepository<IAuction> implements IAuct
       .exec();
   }
 
+  async findActive(): Promise<IAuction | null> {
+    return this.model.findOne({ isActive: true }).exec();
+  }
+
+  async activate(auctionId: string): Promise<IAuction | null> {
+    await this.model.updateMany({ _id: { $ne: auctionId } }, { isActive: false }).exec();
+    return this.model.findByIdAndUpdate(auctionId, { isActive: true }, { new: true }).exec();
+  }
+
+  async deactivate(auctionId: string): Promise<IAuction | null> {
+    return this.model.findByIdAndUpdate(auctionId, { isActive: false }, { new: true }).exec();
+  }
+
   async setStatus(auctionId: string, status: AuctionStatus): Promise<IAuction | null> {
     const extra: Record<string, unknown> = { status };
     if (status === AuctionStatus.LIVE) extra.startedAt = new Date();
-    if (status === AuctionStatus.COMPLETED) extra.completedAt = new Date();
+    if (status === AuctionStatus.COMPLETED) {
+      extra.completedAt = new Date();
+      extra.isActive = false;
+    }
 
     return this.model.findByIdAndUpdate(auctionId, extra, { new: true }).exec();
   }

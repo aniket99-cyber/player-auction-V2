@@ -1,86 +1,107 @@
-<div class="live-viewer" #root>
-  <header class="live-viewer__header">
-    <span class="live-viewer__brand">⚽ Live Auction · Round {{ store.round() }}</span>
-    <span class="live-viewer__status">
-      <span class="live-viewer__status-dot" [class.live-viewer__status-dot--live]="connected()"></span>
-      {{ connected() ? 'Live' : 'Connecting...' }}
-    </span>
-  </header>
+@if (isLoading()) {
+  <div class="live-viewer__standby">
+    <div class="live-viewer__standby-card">
+      <div class="live-viewer__pulse"></div>
+      <h2>Connecting to Live Auction...</h2>
+      <p>Loading live room details</p>
+    </div>
+  </div>
+} @else if (!hasActiveAuction()) {
+  <div class="live-viewer__standby">
+    <div class="live-viewer__standby-card">
+      <div class="live-viewer__standby-icon">⚽</div>
+      <h2>No Active Auction Room</h2>
+      <p>There is currently no active auction session running.</p>
+      <span class="live-viewer__standby-hint">
+        The live feed will automatically connect as soon as an admin activates an auction room.
+      </span>
+    </div>
+  </div>
+} @else {
+  <div class="live-viewer" #root>
+    <header class="live-viewer__header">
+      <span class="live-viewer__brand">⚽ Live Auction · Round {{ store.round() }}</span>
+      <span class="live-viewer__status">
+        <span class="live-viewer__status-dot" [class.live-viewer__status-dot--live]="connected()"></span>
+        {{ connected() ? 'Live' : 'Connecting...' }}
+      </span>
+    </header>
 
-  @if (store.isAwaitingNextRound()) {
-    <section class="live-viewer__section live-viewer__round-banner">
-      <span>Round {{ store.round() }} complete — waiting for the admin to start the next round.</span>
+    @if (store.isAwaitingNextRound()) {
+      <section class="live-viewer__section live-viewer__round-banner">
+        <span>Round {{ store.round() }} complete — waiting for the admin to start the next round.</span>
+      </section>
+    }
+
+    @if (announcement(); as item) {
+      <div class="live-viewer__announcement" [class.live-viewer__announcement--unsold]="item.outcome === 'UNSOLD'">
+        <div class="live-viewer__announcement-player">
+          @if (item.playerImage) {
+            <img [src]="item.playerImage" [alt]="item.title" />
+          } @else {
+            <span>{{ item.title.charAt(0) }}</span>
+          }
+        </div>
+
+        <div class="live-viewer__announcement-copy">
+          <span class="live-viewer__announcement-badge">{{ item.outcome === 'SOLD' ? 'Sold' : 'Unsold' }}</span>
+          <h3 class="live-viewer__announcement-title">{{ item.title }}</h3>
+          <p class="live-viewer__announcement-body">{{ item.body }}</p>
+        </div>
+
+        <div class="live-viewer__announcement-team">
+          @if (item.teamLogo) {
+            <img [src]="item.teamLogo" [alt]="item.teamName" />
+          } @else {
+            <span>{{ item.teamName.charAt(0) }}</span>
+          }
+          <strong>{{ item.teamName }}</strong>
+        </div>
+
+        <span class="live-viewer__announcement-progress"></span>
+      </div>
+    }
+
+    <section class="live-viewer__section live-viewer__stage">
+      <app-player-stage
+        [player]="store.currentPlayer()"
+        [isRevealing]="store.isRevealing()"
+        (revealSettled)="store.settleReveal()"
+      />
+
+      <div class="live-viewer__current-bid">
+        <span class="live-viewer__current-bid-label">Current Bid</span>
+        <span class="live-viewer__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
+      </div>
     </section>
-  }
 
-  @if (announcement(); as item) {
-    <div class="live-viewer__announcement" [class.live-viewer__announcement--unsold]="item.outcome === 'UNSOLD'">
-      <div class="live-viewer__announcement-player">
-        @if (item.playerImage) {
-          <img [src]="item.playerImage" [alt]="item.title" />
-        } @else {
-          <span>{{ item.title.charAt(0) }}</span>
-        }
-      </div>
+    <section class="live-viewer__section live-viewer__activity">
+      <app-latest-activity [entries]="viewerStore.activity()" [teams]="store.teams()" />
+    </section>
 
-      <div class="live-viewer__announcement-copy">
-        <span class="live-viewer__announcement-badge">{{ item.outcome === 'SOLD' ? 'Sold' : 'Unsold' }}</span>
-        <h3 class="live-viewer__announcement-title">{{ item.title }}</h3>
-        <p class="live-viewer__announcement-body">{{ item.body }}</p>
-      </div>
+    <section class="live-viewer__section live-viewer__progress">
+      <app-auction-progress
+        [remainingInPool]="viewerStore.remainingInPool()"
+        [soldCount]="viewerStore.soldCount()"
+        [unsoldCount]="viewerStore.unsoldCount()"
+        [retainedCount]="viewerStore.retainedCount()"
+      />
+    </section>
 
-      <div class="live-viewer__announcement-team">
-        @if (item.teamLogo) {
-          <img [src]="item.teamLogo" [alt]="item.teamName" />
-        } @else {
-          <span>{{ item.teamName.charAt(0) }}</span>
-        }
-        <strong>{{ item.teamName }}</strong>
-      </div>
+    <section class="live-viewer__section live-viewer__teams">
+      <app-teams-panel
+        [teams]="store.teams()"
+        [roster]="viewerStore.roster()"
+        [activeTeamId]="highlightedTeamId()"
+      />
+    </section>
 
-      <span class="live-viewer__announcement-progress"></span>
-    </div>
-  }
+    <section class="live-viewer__section live-viewer__leaderboard">
+      <app-leaderboard [roster]="viewerStore.roster()" [teams]="store.teams()" [highlightedPlayerId]="null" />
+    </section>
 
-  <section class="live-viewer__section live-viewer__stage">
-    <app-player-stage
-      [player]="store.currentPlayer()"
-      [isRevealing]="store.isRevealing()"
-      (revealSettled)="store.settleReveal()"
-    />
-
-    <div class="live-viewer__current-bid">
-      <span class="live-viewer__current-bid-label">Current Bid</span>
-      <span class="live-viewer__current-bid-value">{{ store.currentBid()?.amount ?? '—' }}</span>
-    </div>
-  </section>
-
-  <section class="live-viewer__section live-viewer__activity">
-    <app-latest-activity [entries]="viewerStore.activity()" [teams]="store.teams()" />
-  </section>
-
-  <section class="live-viewer__section live-viewer__progress">
-    <app-auction-progress
-      [remainingInPool]="viewerStore.remainingInPool()"
-      [soldCount]="viewerStore.soldCount()"
-      [unsoldCount]="viewerStore.unsoldCount()"
-      [retainedCount]="viewerStore.retainedCount()"
-    />
-  </section>
-
-  <section class="live-viewer__section live-viewer__teams">
-    <app-teams-panel
-      [teams]="store.teams()"
-      [roster]="viewerStore.roster()"
-      [activeTeamId]="highlightedTeamId()"
-    />
-  </section>
-
-  <section class="live-viewer__section live-viewer__leaderboard">
-    <app-leaderboard [teams]="store.teams()" [highlightedTeamId]="null" />
-  </section>
-
-  <section class="live-viewer__section live-viewer__statistics">
-    <app-statistics [teams]="store.teams()" [roster]="viewerStore.roster()" />
-  </section>
-</div>
+    <section class="live-viewer__section live-viewer__statistics">
+      <app-statistics [teams]="store.teams()" [roster]="viewerStore.roster()" />
+    </section>
+  </div>
+}

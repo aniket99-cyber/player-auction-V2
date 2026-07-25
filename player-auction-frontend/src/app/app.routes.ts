@@ -14,8 +14,17 @@ export const routes: Routes = [
     ],
   },
   {
-    // Public Live Viewer — deliberately outside the guarded shell and the
-    // authGuard: anyone with the link can watch, no account required.
+    // Public Live Viewer — single unified route serving the currently active auction room.
+    path: 'live',
+    loadComponent: () =>
+      import('./features/live-viewer/live-viewer/live-viewer').then((m) => m.LiveViewer),
+  },
+  {
+    path: 'watch',
+    loadComponent: () =>
+      import('./features/live-viewer/live-viewer/live-viewer').then((m) => m.LiveViewer),
+  },
+  {
     path: 'watch/:auctionId',
     loadComponent: () =>
       import('./features/live-viewer/live-viewer/live-viewer').then((m) => m.LiveViewer),

@@ -29,4 +29,16 @@ export class AuctionService {
   create(payload: CreateAuctionRequest): Observable<Auction> {
     return this.api.post<Auction>('/auctions', payload);
   }
+
+  getActive(): Observable<Auction | null> {
+    return this.api.get<Auction | null>('/auctions/active');
+  }
+
+  activate(id: string): Observable<Auction> {
+    return this.api.post<Auction>(`/auctions/${id}/activate`, {});
+  }
+
+  deactivate(id: string): Observable<Auction> {
+    return this.api.post<Auction>(`/auctions/${id}/deactivate`, {});
+  }
 }

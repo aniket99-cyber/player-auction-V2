@@ -1,10 +1,16 @@
 <div class="auction-list">
   <div class="auction-list__header">
     <h1>Auctions</h1>
-    <button mat-flat-button color="primary" (click)="create()">
-      <mat-icon>add</mat-icon>
-      New Auction
-    </button>
+    <div class="auction-list__header-actions">
+      <button mat-stroked-button (click)="copyViewerLink()">
+        <mat-icon>link</mat-icon>
+        Copy Live Viewer Link
+      </button>
+      <button mat-flat-button color="primary" (click)="create()">
+        <mat-icon>add</mat-icon>
+        New Auction
+      </button>
+    </div>
   </div>
 
   @if (isLoading()) {
@@ -14,12 +20,17 @@
   } @else {
     <div class="auction-list__grid">
       @for (auction of auctions(); track auction.id) {
-        <div class="auction-list__card">
+        <div class="auction-list__card" [class.auction-list__card--active-feed]="auction.isActive">
           <div class="auction-list__card-header">
             <span class="auction-list__name">{{ auction.name }}</span>
-            <span class="auction-list__status" [class]="'auction-list__status--' + auction.status.toLowerCase()">
-              {{ auction.status }}
-            </span>
+            <div class="auction-list__badges">
+              @if (auction.isActive) {
+                <span class="auction-list__active-badge">ACTIVE LIVE FEED</span>
+              }
+              <span class="auction-list__status" [class]="'auction-list__status--' + auction.status.toLowerCase()">
+                {{ auction.status }}
+              </span>
+            </div>
           </div>
           <span class="auction-list__meta">
             {{ auction.participatingTeams.length }} teams · {{ auction.playerQueue.length }} in pool
@@ -29,9 +40,13 @@
               <mat-icon>gavel</mat-icon>
               Open Console
             </button>
-            <button mat-button (click)="copyViewerLink(auction)">
-              <mat-icon>link</mat-icon>
-              Copy Viewer Link
+            <button
+              mat-stroked-button
+              [color]="auction.isActive ? 'warn' : 'accent'"
+              (click)="toggleActive(auction)"
+            >
+              <mat-icon>{{ auction.isActive ? 'power_settings_new' : 'sensors' }}</mat-icon>
+              {{ auction.isActive ? 'Deactivate' : 'Activate Live Feed' }}
             </button>
           </div>
         </div>

@@ -1,9 +1,12 @@
 import { Component, computed, input } from '@angular/core';
-import { Team } from '../../../core/models';
+import { Player, Team } from '../../../core/models';
 
-interface RankedTeam extends Team {
+export interface RankedPlayer extends Player {
   rank: number;
-  spent: number;
+  teamName?: string;
+  teamLogoUrl?: string;
+  teamShortName?: string;
+  teamPrimaryColor?: string;
 }
 
 @Component({
@@ -13,13 +16,29 @@ interface RankedTeam extends Team {
   styleUrl: './leaderboard.scss',
 })
 export class Leaderboard {
-  readonly teams = input.required<Team[]>();
-  readonly highlightedTeamId = input<string | null>(null);
+  readonly roster = input<Player[]>([]);
+  readonly teams = input<Team[]>([]);
+  readonly highlightedPlayerId = input<string | null>(null);
 
-  readonly ranked = computed<RankedTeam[]>(() => {
-    return [...this.teams()]
-      .map((team) => ({ ...team, spent: team.totalBudget - team.remainingBudget, rank: 0 }))
-      .sort((a, b) => b.spent - a.spent)
-      .map((team, index) => ({ ...team, rank: index + 1 }));
+  readonly ranked = computed<RankedPlayer[]>(() => {
+    const teamsMap = new Map(this.teams().map((t) => [t.id, t]));
+
+    const soldPlayers = this.roster().filter(
+      (p) => p.soldPrice !== undefined && p.soldPrice !== null && p.soldPrice > 0,
+    );
+
+    return [...soldPlayers]
+      .sort((a, b) => (b.soldPrice ?? 0) - (a.soldPrice ?? 0))
+      .map((player, index) => {
+        const team = player.soldTo ? teamsMap.get(player.soldTo) : undefined;
+        return {
+          ...player,
+          rank: index + 1,
+          teamName: team?.name,
+          teamLogoUrl: team?.logoUrl,
+          teamShortName: team?.shortName,
+          teamPrimaryColor: team?.primaryColor ?? '#2fd0ff',
+        };
+      });
   });
 }

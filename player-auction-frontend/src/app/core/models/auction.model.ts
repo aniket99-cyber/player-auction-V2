@@ -19,6 +19,7 @@ export interface Auction {
   id: string;
   name: string;
   status: AuctionStatus;
+  isActive?: boolean;
   playerQueue: string[];
   currentPlayer?: string;
   playerState?: AuctionPlayerState;
