@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models';
 
@@ -10,9 +11,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 type QueryParams = Record<string, string | number | boolean | undefined | null>;
 
+export interface ApiRequestOptions {
+  showSuccessToast?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly baseUrl = environment.apiUrl;
 
   get<T>(path: string, params?: QueryParams): Observable<T> {
@@ -21,29 +27,48 @@ export class ApiService {
       .pipe(map((res) => this.normalizeResponseData(res.data) as T));
   }
 
-  post<T>(path: string, body: unknown): Observable<T> {
+  post<T>(path: string, body: unknown, options?: ApiRequestOptions): Observable<T> {
     return this.http
       .post<ApiResponse<T>>(`${this.baseUrl}${path}`, body)
-      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
+      .pipe(
+        tap((res) => this.handleSuccessToast(res, options)),
+        map((res) => this.normalizeResponseData(res.data) as T),
+      );
   }
 
-  postFormData<T>(path: string, formData: FormData): Observable<T> {
+  postFormData<T>(path: string, formData: FormData, options?: ApiRequestOptions): Observable<T> {
     return this.http
       .post<ApiResponse<T>>(`${this.baseUrl}${path}`, formData)
-      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
+      .pipe(
+        tap((res) => this.handleSuccessToast(res, options)),
+        map((res) => this.normalizeResponseData(res.data) as T),
+      );
   }
 
-  patch<T>(path: string, body: unknown): Observable<T> {
+  patch<T>(path: string, body: unknown, options?: ApiRequestOptions): Observable<T> {
     return this.http
       .patch<ApiResponse<T>>(`${this.baseUrl}${path}`, body)
-      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
+      .pipe(
+        tap((res) => this.handleSuccessToast(res, options)),
+        map((res) => this.normalizeResponseData(res.data) as T),
+      );
   }
 
-  delete<T>(path: string): Observable<T> {
+  delete<T>(path: string, options?: ApiRequestOptions): Observable<T> {
     return this.http
       .delete<ApiResponse<T>>(`${this.baseUrl}${path}`)
-      .pipe(map((res) => this.normalizeResponseData(res.data) as T));
+      .pipe(
+        tap((res) => this.handleSuccessToast(res, options)),
+        map((res) => this.normalizeResponseData(res.data) as T),
+      );
   }
+
+  private handleSuccessToast<T>(res: ApiResponse<T>, options?: ApiRequestOptions): void {
+    if (options?.showSuccessToast && res?.message) {
+      this.snackBar.open(res.message, 'Close', { duration: 3500, panelClass: ['snack-success'] });
+    }
+  }
+
 
   private normalizeResponseData<T>(data: T): T {
     if (Array.isArray(data)) {

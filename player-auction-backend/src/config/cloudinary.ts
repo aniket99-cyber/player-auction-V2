@@ -15,17 +15,6 @@ if (hasCloudinaryConfig) {
   });
 }
 
-async function ensureCloudinaryFolder(folder: string): Promise<void> {
-  try {
-    await cloudinary.api.create_folder(folder);
-  } catch (error: unknown) {
-    const message = (error as Error).message ?? '';
-    if (!message.includes('already exists')) {
-      throw error;
-    }
-  }
-}
-
 function buildFallbackAssetRef(options: { folder: string; publicId?: string; originalName?: string }): string {
   const normalizedName = options.originalName?.trim() || options.publicId || 'upload';
   return `${options.folder}/${normalizedName}`;
@@ -51,8 +40,6 @@ export async function uploadBufferToCloudinary(
   }
 
   try {
-    await ensureCloudinaryFolder(options.folder);
-
     const result = await new Promise<{ secure_url: string; public_id?: string }>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {

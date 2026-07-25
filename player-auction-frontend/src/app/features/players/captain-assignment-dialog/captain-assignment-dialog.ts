@@ -16,7 +16,12 @@ import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { Player, Team } from '../../../core/models';
 import { PlayerService } from '../services/player.service';
 
-interface CaptainAssignmentDialogData {
+export interface CaptainAssignmentDialogResult {
+  team: Team;
+  player: Player;
+}
+
+export interface CaptainAssignmentDialogData {
   team?: Team;
   allTeams?: Team[];
   selectedPlayer?: Player;
@@ -42,7 +47,7 @@ interface CaptainAssignmentDialogData {
   styleUrl: './captain-assignment-dialog.scss',
 })
 export class CaptainAssignmentDialog implements OnInit {
-  private readonly dialogRef = inject(MatDialogRef<CaptainAssignmentDialog>);
+  private readonly dialogRef = inject(MatDialogRef<CaptainAssignmentDialog, CaptainAssignmentDialogResult | null>);
   private readonly data = inject<CaptainAssignmentDialogData>(MAT_DIALOG_DATA);
   private readonly playerService = inject(PlayerService);
   private readonly fb = inject(FormBuilder);
@@ -133,10 +138,12 @@ export class CaptainAssignmentDialog implements OnInit {
   }
 
   assignCaptain(): void {
-    if (!this.selectedTeam() || !this.selectedPlayer()) {
+    const team = this.selectedTeam();
+    const player = this.selectedPlayer();
+    if (!team || !player) {
       return;
     }
-    this.dialogRef.close(this.selectedTeam());
+    this.dialogRef.close({ team, player });
   }
 
   cancel(): void {

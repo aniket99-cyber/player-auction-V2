@@ -6,10 +6,10 @@ const objectId = Joi.string().hex().length(24);
 export const createTeamSchema = Joi.object({
   name: Joi.string().trim().min(2).max(80).required(),
   shortName: Joi.string().trim().min(2).max(5).required(),
-  logoUrl: Joi.string().uri().optional(),
+  logoUrl: Joi.string().uri().allow('', null).optional(),
   primaryColor: hexColor.optional(),
   secondaryColor: hexColor.optional(),
-  owner: objectId.optional(),
+  owner: objectId.allow(null).optional(),
   totalBudget: Joi.number().min(0).required(),
   season: Joi.string().trim().required(),
 });
@@ -17,10 +17,13 @@ export const createTeamSchema = Joi.object({
 export const updateTeamSchema = Joi.object({
   name: Joi.string().trim().min(2).max(80).optional(),
   shortName: Joi.string().trim().min(2).max(5).optional(),
-  logoUrl: Joi.string().uri().optional(),
+  logoUrl: Joi.string().uri().allow('', null).optional(),
   primaryColor: hexColor.optional(),
   secondaryColor: hexColor.optional(),
-  captain: objectId.optional(),
+  captain: Joi.alternatives()
+    .try(objectId, Joi.object({ id: objectId }).unknown(), Joi.object({ _id: objectId }).unknown())
+    .allow(null, '')
+    .optional(),
   totalBudget: Joi.number().min(0).optional(),
 }).min(1);
 

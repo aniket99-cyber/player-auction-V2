@@ -8,7 +8,13 @@
   </div>
 
   <h2 class="player-card__name">{{ player().name }}</h2>
-  <span class="player-card__meta">{{ player().role }} · {{ player().country }}</span>
+  <span class="player-card__meta">
+    {{ player().role }}
+    @if (player().previousTeam) {
+      · {{ player().previousTeam }}
+    }
+    · Class of {{ player().passingYear }}
+  </span>
 
   <div class="player-card__stats">
     <div class="player-card__stat">

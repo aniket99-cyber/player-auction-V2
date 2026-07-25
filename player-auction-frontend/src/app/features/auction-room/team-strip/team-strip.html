@@ -1,7 +1,17 @@
 <div class="team-strip">
   @for (team of teams(); track team.id) {
-    <div class="team-strip__item" [class.team-strip__item--active]="team.id === highlightedTeamId()">
-      <span class="team-strip__name">{{ team.shortName }}</span>
+    <div
+      class="team-strip__item"
+      [class.team-strip__item--active]="team.id === highlightedTeamId()"
+      [class.team-strip__item--locked]="isLockedOut(team)"
+      [title]="isLockedOut(team) ? team.name + ' cannot afford this player' : ''"
+    >
+      <span class="team-strip__name">
+        {{ team.shortName }}
+        @if (isLockedOut(team)) {
+          <span class="team-strip__lock">🔒</span>
+        }
+      </span>
       <span class="team-strip__budget">{{ team.remainingBudget }}</span>
       <div class="team-strip__meter">
         <div class="team-strip__meter-fill" [style.width.%]="budgetUsedPercent(team)"></div>

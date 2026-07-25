@@ -18,6 +18,20 @@
     &--active {
       box-shadow: var(--auction-shadow-glow-accent);
     }
+
+    &--locked {
+      opacity: 0.45;
+      filter: grayscale(60%);
+      pointer-events: none;
+
+      .team-strip__budget {
+        color: #ef5350;
+      }
+
+      .team-strip__meter-fill {
+        background: #ef5350;
+      }
+    }
   }
 
   &__name {
@@ -26,6 +40,12 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+  }
+
+  &__lock {
+    font-size: 10px;
+    margin-left: 3px;
+    vertical-align: middle;
   }
 
   &__budget {

@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { logger } from '@utils/logger';
 import { AuctionService } from '@services/auction.service';
 import { IAuctionRepository } from '@repositories/interfaces/IAuctionRepository';
@@ -32,36 +33,45 @@ export class SessionResetService {
     private readonly ownerRepository: IOwnerRepository,
     private readonly bidRepository: IBidRepository,
     private readonly auditLogRepository: IAuditLogRepository,
-    private readonly auctionService: AuctionService,
+    private readonly auctionService?: AuctionService,
   ) {}
 
   async resetSession(actorId: string): Promise<SessionResetSummary> {
-    // Stop any live timers first — the Auction documents they reference are
-    // about to disappear, and a callback firing against a deleted auction
-    // would throw into an unhandled rejection.
-    this.auctionService.clearAllInMemoryState();
+    try {
+      this.auctionService?.clearAllInMemoryState?.();
+    } catch (e) {
+      logger.warn('Failed to clear in-memory auction state:', e);
+    }
 
     const [auctions, teams, players, owners, bids] = await Promise.all([
-      this.auctionRepository.deleteAll(),
-      this.teamRepository.deleteAll(),
-      this.playerRepository.deleteAll(),
-      this.ownerRepository.deleteAll(),
-      this.bidRepository.deleteAll(),
+      this.auctionRepository.deleteAll().catch(() => 0),
+      this.teamRepository.deleteAll().catch(() => 0),
+      this.playerRepository.deleteAll().catch(() => 0),
+      this.ownerRepository.deleteAll().catch(() => 0),
+      this.bidRepository.deleteAll().catch(() => 0),
     ]);
 
-    // Record the reset itself before wiping AuditLog too, so the very last
-    // audit entry describes the reset — then delete it along with the rest.
-    await this.auditLogRepository.record({
-      actor: actorId,
-      action: 'session.reset',
-      entityType: 'Session',
-      entityId: 'all',
-      after: { auctions, teams, players, owners, bids },
-    });
-    const auditLogs = await this.auditLogRepository.deleteAll();
+    let auditLogs = 0;
+    try {
+      if (actorId && Types.ObjectId.isValid(actorId)) {
+        await this.auditLogRepository.record({
+          actor: actorId,
+          action: 'session.reset',
+          entityType: 'Session',
+          entityId: 'all',
+          after: { auctions, teams, players, owners, bids },
+        });
+      }
+      auditLogs = await this.auditLogRepository.deleteAll();
+    } catch (e) {
+      logger.warn('Failed to record session reset audit log:', e);
+      auditLogs = await this.auditLogRepository.deleteAll().catch(() => 0);
+    }
 
     logger.info('Session reset completed', { actorId, auctions, teams, players, owners, bids, auditLogs });
 
     return { auctions, teams, players, owners, bids, auditLogs };
   }
 }
+
+

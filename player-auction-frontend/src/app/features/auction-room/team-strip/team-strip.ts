@@ -10,6 +10,11 @@ import { Team } from '../../../core/models';
 export class TeamStrip {
   readonly teams = input.required<Team[]>();
   readonly highlightedTeamId = input<string | null>(null);
+  readonly lockedOutTeamIds = input<Set<string>>(new Set());
+
+  isLockedOut(team: Team): boolean {
+    return this.lockedOutTeamIds().has(team.id);
+  }
 
   budgetUsedPercent(team: Team): number {
     if (team.totalBudget === 0) return 0;

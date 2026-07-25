@@ -1,5 +1,6 @@
 import { parse } from 'csv-parse/sync';
 import ExcelJS from 'exceljs';
+import { Types } from 'mongoose';
 import { ApiError } from '@utils/ApiError';
 import { eventBus } from '@events/EventBus';
 import { IPlayer, PlayerModel } from '@models/Player.model';
@@ -25,19 +26,128 @@ interface RowError {
   errors: string[];
 }
 
-const REQUIRED_COLUMNS = ['name', 'role', 'country', 'basePrice'] as const;
-const VALID_ROLES = new Set(Object.values(PlayerRole));
+const REQUIRED_COLUMNS = ['name'] as const;
+const VALID_ROLES = new Set(['GOALKEEPER', 'GK', 'DEFENDER', 'DEF', 'MIDFIELDER', 'MID', 'FORWARD', 'FWD', 'STRIKER']);
+const COLUMN_MAP: Record<string, string> = {
+  name: 'name',
+  player: 'name',
+  playername: 'name',
+  'player name': 'name',
+  role: 'role',
+  position: 'role',
+  pos: 'role',
+  type: 'role',
+  category: 'role',
+  country: 'country',
+  nation: 'country',
+  nationality: 'country',
+  baseprice: 'basePrice',
+  base_price: 'basePrice',
+  'base price': 'basePrice',
+  price: 'basePrice',
+  cost: 'basePrice',
+  passingyear: 'passingYear',
+  passing_year: 'passingYear',
+  'passing year': 'passingYear',
+  year: 'passingYear',
+  batch: 'passingYear',
+  previousteam: 'previousTeam',
+  previous_team: 'previousTeam',
+  'previous team': 'previousTeam',
+  lastteam: 'previousTeam',
+  'last team': 'previousTeam',
+  age: 'age',
+  appearances: 'appearances',
+  apps: 'appearances',
+  matches: 'appearances',
+  goals: 'goals',
+  assists: 'assists',
+};
+
+function normalizeRecord(rawRecord: Record<string, string>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+  for (const [key, value] of Object.entries(rawRecord)) {
+    const cleanKey = key.trim().toLowerCase();
+    const targetKey = COLUMN_MAP[cleanKey] || key.trim();
+    if (value !== undefined && value !== null) {
+      normalized[targetKey] = String(value).trim();
+    }
+  }
+  return normalized;
+}
+
+function normalizeRole(rawRole?: string): PlayerRole {
+  if (!rawRole) return PlayerRole.MIDFIELDER;
+  const upper = rawRole.trim().toUpperCase();
+  if (
+    upper === 'GK' ||
+    upper === 'GOALKEEPER' ||
+    upper === 'KEEP' ||
+    upper === 'KEEPER' ||
+    upper === 'WICKETKEEPER' ||
+    upper === 'WK'
+  ) {
+    return PlayerRole.GOALKEEPER;
+  }
+  if (
+    upper === 'DEFENDER' ||
+    upper === 'DEF' ||
+    upper === 'BACK' ||
+    upper === 'CB' ||
+    upper === 'LB' ||
+    upper === 'RB' ||
+    upper === 'LWB' ||
+    upper === 'RWB' ||
+    upper === 'BOWLER' ||
+    upper === 'BOWL'
+  ) {
+    return PlayerRole.DEFENDER;
+  }
+  if (
+    upper === 'MIDFIELDER' ||
+    upper === 'MID' ||
+    upper === 'CM' ||
+    upper === 'CAM' ||
+    upper === 'CDM' ||
+    upper === 'RM' ||
+    upper === 'LM' ||
+    upper === 'ALL-ROUNDER' ||
+    upper === 'ALLROUNDER' ||
+    upper === 'AR' ||
+    upper === 'ALL ROUNDER'
+  ) {
+    return PlayerRole.MIDFIELDER;
+  }
+  if (
+    upper === 'FORWARD' ||
+    upper === 'FWD' ||
+    upper === 'STRIKER' ||
+    upper === 'ST' ||
+    upper === 'ATTACKER' ||
+    upper === 'WINGER' ||
+    upper === 'LW' ||
+    upper === 'RW' ||
+    upper === 'SS' ||
+    upper === 'BATSMAN' ||
+    upper === 'BAT' ||
+    upper === 'BATTER'
+  ) {
+    return PlayerRole.FORWARD;
+  }
+  return PlayerRole.MIDFIELDER;
+}
 
 export class PlayerImportService {
   constructor(private readonly auditLogRepository: IAuditLogRepository) {}
 
   async importFromCsv(buffer: Buffer, actorId: string): Promise<{ imported: number; players: IPlayer[] }> {
-    const records: Record<string, string>[] = parse(buffer, {
+    const rawRecords: Record<string, string>[] = parse(buffer, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
     });
 
+    const records = rawRecords.map(normalizeRecord);
     return this.importRecords(records, actorId);
   }
 
@@ -60,11 +170,11 @@ export class PlayerImportService {
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       const values = row.values as unknown[];
-      const record: Record<string, string> = {};
+      const rawRecord: Record<string, string> = {};
       headers.forEach((header, index) => {
-        record[header] = String(values[index + 1] ?? '').trim();
+        rawRecord[header] = String(values[index + 1] ?? '').trim();
       });
-      records.push(record);
+      records.push(normalizeRecord(rawRecord));
     });
 
     return this.importRecords(records, actorId);
@@ -87,9 +197,9 @@ export class PlayerImportService {
     const documents = rows.map((row) => ({
       name: row.name,
       role: row.role,
-      country: row.country,
+      country: row.country || 'India',
       age: row.age,
-      passingYear: row.passingYear,
+      passingYear: row.passingYear ?? 2026,
       previousTeam: row.previousTeam,
       basePrice: row.basePrice,
       auctionStatus: PlayerAuctionStatus.PENDING,
@@ -101,22 +211,38 @@ export class PlayerImportService {
       },
     }));
 
-    // insertMany with ordered:true — every row already passed validation above,
-    // so this is the "insert all" half of validate-all-then-insert-all.
-    const created = await PlayerModel.insertMany(documents, { ordered: true });
-    const players = created as unknown as IPlayer[];
+    try {
+      const created = await PlayerModel.insertMany(documents, { ordered: true });
+      const players = created as unknown as IPlayer[];
 
-    await this.auditLogRepository.record({
-      actor: actorId,
-      action: 'player.bulkImported',
-      entityType: 'Player',
-      entityId: 'bulk',
-      after: { count: players.length, names: players.map((p) => p.name) },
-    });
+      // Convert to plain objects immediately so res.json() / socket serialization
+      // never touches raw Mongoose Document internals (circular refs, getters, etc.)
+      const plainPlayers = players.map((p) => p.toObject({ virtuals: true }));
 
-    players.forEach((player) => eventBus.emit('player.created', { player }));
+      // Fire-and-forget: audit + realtime notifications — errors here must NOT
+      // roll back an already-committed insert, so we swallow them gracefully.
+      Promise.resolve()
+        .then(() => {
+          if (actorId && Types.ObjectId.isValid(actorId)) {
+            return this.auditLogRepository.record({
+              actor: actorId,
+              action: 'player.bulkImported',
+              entityType: 'Player',
+              entityId: 'bulk',
+              after: { count: players.length, names: players.map((p) => p.name) },
+            });
+          }
+        })
+        .catch(() => { /* audit failure must not surface as a 500 */ })
+        .finally(() => {
+          players.forEach((player) => eventBus.emit('player.created', { player }));
+        });
 
-    return { imported: players.length, players };
+      return { imported: players.length, players: plainPlayers as unknown as IPlayer[] };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Database error during player import';
+      throw ApiError.badRequest(`Import failed: ${message}`);
+    }
   }
 
   private parseAndValidateRows(records: Record<string, string>[]): {
@@ -130,36 +256,26 @@ export class PlayerImportService {
       const rowNumber = index + 2;
       const rowErrors: string[] = [];
 
-      for (const column of REQUIRED_COLUMNS) {
-        if (!record[column] || record[column].trim() === '') {
-          rowErrors.push(`Missing required column "${column}"`);
-        }
+      const name = record.name?.trim() || '';
+      if (!name) {
+        rowErrors.push('Missing required column "name"');
       }
 
-      const role = record.role?.trim().toUpperCase();
-      if (record.role && !VALID_ROLES.has(role as PlayerRole)) {
-        rowErrors.push(
-          `role must be one of ${Array.from(VALID_ROLES).join(', ')}, got "${record.role}"`,
-        );
+      const role = normalizeRole(record.role);
+
+      let basePrice = Number(record.basePrice);
+      if (!record.basePrice || Number.isNaN(basePrice) || basePrice < 0) {
+        basePrice = 100;
       }
 
-      const basePrice = Number(record.basePrice);
-      if (record.basePrice && (Number.isNaN(basePrice) || basePrice < 0)) {
-        rowErrors.push(`basePrice must be a non-negative number, got "${record.basePrice}"`);
-      }
+      const country = record.country?.trim() || 'India';
 
       const age = record.age ? Number(record.age) : undefined;
       if (record.age && (Number.isNaN(age) || (age as number) < 14 || (age as number) > 60)) {
         rowErrors.push(`age must be between 14 and 60, got "${record.age}"`);
       }
 
-      const passingYear = record.passingYear ? Number(record.passingYear) : undefined;
-      if (
-        record.passingYear &&
-        (Number.isNaN(passingYear) || (passingYear as number) < 1950 || (passingYear as number) > 2100)
-      ) {
-        rowErrors.push(`passingYear must be between 1950 and 2100, got "${record.passingYear}"`);
-      }
+      const passingYear = record.passingYear ? Number(record.passingYear) : 2026;
 
       const numericFields: Array<keyof ImportRow> = ['appearances', 'goals', 'assists'];
       const numericValues: Partial<Record<string, number>> = {};
@@ -167,9 +283,7 @@ export class PlayerImportService {
         const raw = record[field as string];
         if (raw) {
           const value = Number(raw);
-          if (Number.isNaN(value) || value < 0) {
-            rowErrors.push(`${field} must be a non-negative number, got "${raw}"`);
-          } else {
+          if (!Number.isNaN(value) && value >= 0) {
             numericValues[field as string] = value;
           }
         }
@@ -182,9 +296,9 @@ export class PlayerImportService {
 
       rows.push({
         rowNumber,
-        name: record.name.trim(),
-        role: role as PlayerRole,
-        country: record.country.trim(),
+        name,
+        role,
+        country,
         basePrice,
         age,
         passingYear,
@@ -198,3 +312,4 @@ export class PlayerImportService {
     return { rows, errors };
   }
 }
+

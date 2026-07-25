@@ -57,3 +57,43 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     background: var(--auction-accent-strong);
   }
 }
+
+// Warning snackbar for locked-out team alerts
+.snack-locked-out {
+  .mdc-snackbar__surface {
+    background: #6d3b00 !important;
+    border: 1px solid #ffb300 !important;
+    color: #ffe082 !important;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: #ffb300 !important;
+  }
+}
+
+// Error snackbar for API error alerts
+.snack-error {
+  .mdc-snackbar__surface {
+    background: #4a151b !important;
+    border: 1px solid #ff5252 !important;
+    color: #ffcdd2 !important;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: #ff5252 !important;
+  }
+}
+
+// Success snackbar for API success alerts
+.snack-success {
+  .mdc-snackbar__surface {
+    background: #0d3b1e !important;
+    border: 1px solid #00e676 !important;
+    color: #b9f6ca !important;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: #00e676 !important;
+  }
+}
+

@@ -1,5 +1,6 @@
 import { parse } from 'csv-parse/sync';
 import ExcelJS from 'exceljs';
+import { Types } from 'mongoose';
 import { ApiError } from '@utils/ApiError';
 import { eventBus } from '@events/EventBus';
 import { ITeam, TeamModel } from '@models/Team.model';
@@ -10,7 +11,7 @@ interface ImportRow {
   rowNumber: number;
   name: string;
   shortName: string;
-  ownerId: string;
+  ownerId?: string;
   totalBudget: number;
   season: string;
   primaryColor?: string;
@@ -22,8 +23,50 @@ interface RowError {
   errors: string[];
 }
 
-const HEX_COLOR_PATTERN = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-const REQUIRED_COLUMNS = ['name', 'shortName', 'ownerId', 'totalBudget', 'season'] as const;
+const REQUIRED_COLUMNS = ['name'] as const;
+const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
+
+const COLUMN_MAP: Record<string, string> = {
+  name: 'name',
+  team: 'name',
+  teamname: 'name',
+  'team name': 'name',
+  title: 'name',
+  shortname: 'shortName',
+  short_name: 'shortName',
+  'short name': 'shortName',
+  code: 'shortName',
+  tag: 'shortName',
+  ownerid: 'ownerId',
+  owner_id: 'ownerId',
+  'owner id': 'ownerId',
+  owner: 'ownerId',
+  totalbudget: 'totalBudget',
+  total_budget: 'totalBudget',
+  'total budget': 'totalBudget',
+  budget: 'totalBudget',
+  points: 'totalBudget',
+  season: 'season',
+  year: 'season',
+  primarycolor: 'primaryColor',
+  primary_color: 'primaryColor',
+  'primary color': 'primaryColor',
+  secondarycolor: 'secondaryColor',
+  secondary_color: 'secondaryColor',
+  'secondary color': 'secondaryColor',
+};
+
+function normalizeRecord(rawRecord: Record<string, string>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+  for (const [key, value] of Object.entries(rawRecord)) {
+    const cleanKey = key.trim().toLowerCase();
+    const targetKey = COLUMN_MAP[cleanKey] || key.trim();
+    if (value !== undefined && value !== null) {
+      normalized[targetKey] = String(value).trim();
+    }
+  }
+  return normalized;
+}
 
 export class TeamImportService {
   constructor(
@@ -32,12 +75,13 @@ export class TeamImportService {
   ) {}
 
   async importFromCsv(buffer: Buffer, actorId: string): Promise<{ imported: number; teams: ITeam[] }> {
-    const records: Record<string, string>[] = parse(buffer, {
+    const rawRecords: Record<string, string>[] = parse(buffer, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
     });
 
+    const records = rawRecords.map(normalizeRecord);
     return this.importRecords(records, actorId);
   }
 
@@ -57,11 +101,11 @@ export class TeamImportService {
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       const values = row.values as unknown[];
-      const record: Record<string, string> = {};
+      const rawRecord: Record<string, string> = {};
       headers.forEach((header, index) => {
-        record[header] = String(values[index + 1] ?? '').trim();
+        rawRecord[header] = String(values[index + 1] ?? '').trim();
       });
-      records.push(record);
+      records.push(normalizeRecord(rawRecord));
     });
 
     return this.importRecords(records, actorId);
@@ -87,7 +131,7 @@ export class TeamImportService {
     const documents = rows.map((row) => ({
       name: row.name,
       shortName: row.shortName,
-      owner: row.ownerId,
+      ...(row.ownerId && Types.ObjectId.isValid(row.ownerId) ? { owner: row.ownerId } : {}),
       totalBudget: row.totalBudget,
       remainingBudget: row.totalBudget,
       season: row.season,
@@ -97,24 +141,34 @@ export class TeamImportService {
       retentions: [],
     }));
 
-    // insertMany with ordered:true (default) — since every row already passed
-    // validation above, this is the "insert all" half of validate-all-then-insert-all;
-    // a mid-batch failure here (e.g. a race against a concurrent create) still aborts
-    // the remaining inserts rather than leaving a partial import silently applied.
-    const created = await TeamModel.insertMany(documents, { ordered: true });
-    const teams = created as unknown as ITeam[];
+    try {
+      const created = await TeamModel.insertMany(documents, { ordered: true });
+      const teams = created as unknown as ITeam[];
 
-    await this.auditLogRepository.record({
-      actor: actorId,
-      action: 'team.bulkImported',
-      entityType: 'Team',
-      entityId: 'bulk',
-      after: { count: teams.length, names: teams.map((t) => t.name) },
-    });
+      const plainTeams = teams.map((t) => t.toObject({ virtuals: true }));
 
-    teams.forEach((team) => eventBus.emit('team.created', { team }));
+      Promise.resolve()
+        .then(() => {
+          if (actorId && Types.ObjectId.isValid(actorId)) {
+            return this.auditLogRepository.record({
+              actor: actorId,
+              action: 'team.bulkImported',
+              entityType: 'Team',
+              entityId: 'bulk',
+              after: { count: teams.length, names: teams.map((t) => t.name) },
+            });
+          }
+        })
+        .catch(() => { /* audit failure must not surface as a 500 */ })
+        .finally(() => {
+          teams.forEach((team) => eventBus.emit('team.created', { team }));
+        });
 
-    return { imported: teams.length, teams };
+      return { imported: teams.length, teams: plainTeams as unknown as ITeam[] };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Database error during team import';
+      throw ApiError.badRequest(`Import failed: ${message}`);
+    }
   }
 
   private parseAndValidateRows(records: Record<string, string>[]): {
@@ -125,23 +179,29 @@ export class TeamImportService {
     const errors: RowError[] = [];
 
     records.forEach((record, index) => {
-      const rowNumber = index + 2; // +1 for header row, +1 for 1-based numbering
+      const rowNumber = index + 2;
       const rowErrors: string[] = [];
 
-      for (const column of REQUIRED_COLUMNS) {
-        if (!record[column] || record[column].trim() === '') {
-          rowErrors.push(`Missing required column "${column}"`);
-        }
+      const name = record.name?.trim() || '';
+      if (!name) {
+        rowErrors.push('Missing required column "name"');
       }
 
-      const totalBudget = Number(record.totalBudget);
+      // Generate shortName automatically if not provided
+      let shortName = record.shortName?.trim().toUpperCase() || '';
+      if (!shortName && name) {
+        shortName = name.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() || 'TEAM';
+      }
+      if (shortName.length > 5) {
+        shortName = shortName.slice(0, 5);
+      }
+
+      const totalBudget = record.totalBudget ? Number(record.totalBudget) : 1000;
       if (record.totalBudget && (Number.isNaN(totalBudget) || totalBudget < 0)) {
         rowErrors.push(`totalBudget must be a non-negative number, got "${record.totalBudget}"`);
       }
 
-      if (record.shortName && record.shortName.length > 5) {
-        rowErrors.push(`shortName must be 5 characters or fewer, got "${record.shortName}"`);
-      }
+      const season = record.season?.trim() || '2026';
 
       if (record.primaryColor && !HEX_COLOR_PATTERN.test(record.primaryColor)) {
         rowErrors.push(`primaryColor "${record.primaryColor}" is not a valid hex color`);
@@ -158,11 +218,11 @@ export class TeamImportService {
 
       rows.push({
         rowNumber,
-        name: record.name.trim(),
-        shortName: record.shortName.trim().toUpperCase(),
-        ownerId: record.ownerId.trim(),
+        name,
+        shortName,
+        ownerId: record.ownerId?.trim() || undefined,
         totalBudget,
-        season: record.season.trim(),
+        season,
         primaryColor: record.primaryColor?.trim(),
         secondaryColor: record.secondaryColor?.trim(),
       });
@@ -198,3 +258,5 @@ export class TeamImportService {
     return errors;
   }
 }
+
+

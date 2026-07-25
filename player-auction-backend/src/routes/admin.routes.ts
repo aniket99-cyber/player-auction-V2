@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AdminController } from '@controllers/admin.controller';
 import { SessionResetService } from '@services/session-reset.service';
-import { auctionService } from '@routes/auction.routes';
+import { AuctionService } from '@services/auction.service';
 import { AuctionRepository } from '@repositories/implementations/AuctionRepository';
 import { TeamRepository } from '@repositories/implementations/TeamRepository';
 import { PlayerRepository } from '@repositories/implementations/PlayerRepository';
@@ -16,6 +16,14 @@ import { asyncHandler } from '@utils/asyncHandler';
 import { UserRole } from '@constants/enums';
 
 const router = Router();
+
+const auctionService = new AuctionService(
+  new AuctionRepository(),
+  new TeamRepository(),
+  new PlayerRepository(),
+  new AuditLogRepository(),
+  new SettingsRepository(),
+);
 
 const sessionResetService = new SessionResetService(
   new AuctionRepository(),

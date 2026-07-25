@@ -8,7 +8,6 @@ export interface SessionResetSummary {
   teams: number;
   players: number;
   owners: number;
-  captains: number;
   bids: number;
   auditLogs: number;
 }

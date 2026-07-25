@@ -19,6 +19,10 @@ import { TeamService } from '../services/team.service';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog';
 import { ImportDialog } from '../../../shared/components/import-dialog/import-dialog';
 import { ImportResult, PaginatedResult, Team } from '../../../core/models';
+import {
+  CaptainAssignmentDialog,
+  CaptainAssignmentDialogResult,
+} from '../../players/captain-assignment-dialog/captain-assignment-dialog';
 
 @Component({
   selector: 'app-team-list',
@@ -148,7 +152,7 @@ export class TeamList implements OnInit {
         width: '520px',
         data: {
           title: 'Import Teams',
-          hint: 'Upload a CSV or Excel file with columns: name, shortName, ownerId, totalBudget, season. Optional: primaryColor, secondaryColor. All rows must be valid — if any row fails, nothing is imported.',
+          hint: 'Upload a CSV or Excel file with columns: name, shortName, totalBudget, season. Optional: ownerId, primaryColor, secondaryColor. All rows must be valid — if any row fails, nothing is imported.',
           importCsv: (file: File) => this.teamService.importCsv(file),
           importExcel: (file: File) => this.teamService.importExcel(file),
         },
@@ -167,6 +171,38 @@ export class TeamList implements OnInit {
 
   viewTeam(team: Team): void {
     this.router.navigate(['/teams', team.id]);
+  }
+
+  assignCaptain(team: Team): void {
+    this.teamService.list({ page: 1, limit: 1000 }).subscribe({
+      next: (result) => {
+        const dialogRef = this.dialog.open(CaptainAssignmentDialog, {
+          width: '520px',
+          data: {
+            team,
+            allTeams: result.data,
+          },
+        });
+
+        dialogRef.afterClosed().subscribe((res: CaptainAssignmentDialogResult | null) => {
+          if (!res || !res.team || !res.player) return;
+          const targetTeamId = typeof res.team === 'string' ? res.team : (res.team.id || (res.team as any)._id);
+          const targetPlayerId = typeof res.player === 'string' ? res.player : (res.player.id || (res.player as any)._id);
+
+          this.teamService.setCaptain(targetTeamId, targetPlayerId).subscribe({
+            next: () => {
+              this.snackBar.open(`${res.player.name} assigned as captain to ${res.team.name}`, 'Close', {
+                duration: 4000,
+              });
+              this.fetchTeams();
+            },
+            error: (err) => {
+              this.snackBar.open(err.error?.message || 'Failed to assign captain', 'Close', { duration: 4000 });
+            },
+          });
+        });
+      },
+    });
   }
 
   editTeam(team: Team): void {

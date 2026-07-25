@@ -2,15 +2,18 @@ import { Request, Response } from 'express';
 import { AuctionService } from '@services/auction.service';
 import { IAuctionRepository } from '@repositories/interfaces/IAuctionRepository';
 import { IBidRepository } from '@repositories/interfaces/IBidRepository';
+import { IPlayerRepository } from '@repositories/interfaces/IPlayerRepository';
+import { PlayerRepository } from '@repositories/implementations/PlayerRepository';
 import { ApiResponse } from '@utils/ApiResponse';
 import { ApiError } from '@utils/ApiError';
-import { AuctionSelectionMode, AuctionStatus } from '@constants/enums';
+import { AuctionSelectionMode, AuctionStatus, PlayerAuctionStatus } from '@constants/enums';
 
 export class AuctionController {
   constructor(
     private readonly auctionService: AuctionService,
     private readonly auctionRepository: IAuctionRepository,
     private readonly bidRepository: IBidRepository,
+    private readonly playerRepository: IPlayerRepository = new PlayerRepository(),
   ) {}
 
   list = async (req: Request, res: Response): Promise<void> => {
@@ -36,8 +39,20 @@ export class AuctionController {
   create = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) throw ApiError.unauthorized();
 
+    // Automatically exclude any Captain, Retained, or Sold players from entering the auction queue
+    let playerQueue = req.body.playerQueue;
+    if (Array.isArray(playerQueue) && playerQueue.length > 0) {
+      const eligiblePlayers = await this.playerRepository.findMany({
+        _id: { $in: playerQueue },
+        auctionStatus: { $in: [PlayerAuctionStatus.PENDING, PlayerAuctionStatus.UNSOLD] },
+      } as never);
+      const eligibleSet = new Set(eligiblePlayers.map((p) => p._id.toString()));
+      playerQueue = playerQueue.filter((id: string) => eligibleSet.has(id));
+    }
+
     const auction = await this.auctionRepository.create({
       ...req.body,
+      playerQueue,
       createdBy: req.user.sub,
       selectionMode: req.body.selectionMode ?? AuctionSelectionMode.SEQUENTIAL,
     } as never);

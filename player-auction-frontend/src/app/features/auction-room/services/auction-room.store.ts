@@ -8,6 +8,7 @@ export class AuctionRoomStore {
   readonly playerState = signal<AuctionPlayerState | null>(null);
   readonly bidIncrementRules = signal<BidIncrementRule[]>([]);
   readonly participatingTeamIds = signal<string[]>([]);
+  readonly requiredPlayersPerTeam = signal<number>(0);
 
   readonly currentPlayer = signal<Player | null>(null);
   readonly currentBid = signal<{ amount: number } | null>(null);
@@ -24,6 +25,24 @@ export class AuctionRoomStore {
     () => this.isLive() && this.playerState() === AuctionPlayerState.IN_BIDDING,
   );
   readonly isFinalizing = computed(() => this.playerState() === AuctionPlayerState.FINALIZING);
+
+  /**
+   * IDs of teams that still need more players but can no longer afford the
+   * current bid — i.e. they are effectively locked out of this player.
+   */
+  readonly lockedOutTeamIds = computed<Set<string>>(() => {
+    const bid = this.currentBid();
+    const required = this.requiredPlayersPerTeam();
+    if (!bid || required === 0) return new Set<string>();
+    const locked = new Set<string>();
+    for (const team of this.teams()) {
+      const needsMorePlayers = team.players.length < required;
+      const cantAfford = team.remainingBudget < bid.amount;
+      if (needsMorePlayers && cantAfford) locked.add(team.id);
+    }
+    return locked;
+  });
+
   readonly isAwaitingNextRound = computed(
     () => this.playerState() === AuctionPlayerState.AWAITING_NEXT_ROUND,
   );
@@ -41,7 +60,7 @@ export class AuctionRoomStore {
     return bid.amount + increment;
   });
 
-  loadFromAuction(auction: Auction, currentPlayer: Player | null, teams: Team[]): void {
+  loadFromAuction(auction: Auction, currentPlayer: Player | null, teams: Team[], requiredPlayersPerTeam?: number): void {
     this.auctionId.set(auction.id);
     this.auctionStatus.set(auction.status);
     this.playerState.set(auction.playerState ?? null);
@@ -52,6 +71,7 @@ export class AuctionRoomStore {
     this.teams.set(teams);
     this.round.set(auction.round);
     this.awaitingNextRoundUnsoldCount.set(auction.unsoldThisRound.length);
+    if (requiredPlayersPerTeam != null) this.requiredPlayersPerTeam.set(requiredPlayersPerTeam);
   }
 
   setPlayerSelected(player: Player): void {
@@ -131,5 +151,6 @@ export class AuctionRoomStore {
     this.isRevealing.set(false);
     this.round.set(1);
     this.awaitingNextRoundUnsoldCount.set(0);
+    this.requiredPlayersPerTeam.set(0);
   }
 }

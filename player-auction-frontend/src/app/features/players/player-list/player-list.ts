@@ -19,7 +19,10 @@ import { ConfirmDialog } from '../../../shared/components/confirm-dialog';
 import { ImportDialog } from '../../../shared/components/import-dialog/import-dialog';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 import { RetainPlayerDialog } from '../retain-player-dialog/retain-player-dialog';
-import { CaptainAssignmentDialog } from '../captain-assignment-dialog/captain-assignment-dialog';
+import {
+  CaptainAssignmentDialog,
+  CaptainAssignmentDialogResult,
+} from '../captain-assignment-dialog/captain-assignment-dialog';
 import {
   PaginatedResult,
   Player,
@@ -185,7 +188,7 @@ export class PlayerList implements OnInit {
       width: '520px',
       data: {
         title: 'Import Players',
-        hint: 'Upload a CSV or Excel file with columns: name, role, country, basePrice. Optional: age, passingYear, previousTeam, appearances, goals, assists. All rows must be valid — if any row fails, nothing is imported.',
+        hint: 'Upload a CSV or Excel file with column: name. Optional: role, country, basePrice, age, passingYear, previousTeam, appearances, goals, assists. All rows must be valid — if any row fails, nothing is imported.',
         importCsv: (file: File) => this.playerService.importCsv(file),
         importExcel: (file: File) => this.playerService.importExcel(file),
       },
@@ -244,14 +247,24 @@ export class PlayerList implements OnInit {
             },
           });
 
-          dialogRef.afterClosed().subscribe((team: Team | null) => {
-            if (!team) return;
-            this.teamService.setCaptain(team.id, player.id).subscribe(() => {
-              this.snackBar.open(`${player.name} assigned as captain to ${team.name}`, 'Close', {
-                duration: 4000,
-              });
-              this.loadCaptainAssignments();
-              this.fetchPlayers();
+          dialogRef.afterClosed().subscribe((res: CaptainAssignmentDialogResult | Team | null) => {
+            if (!res) return;
+            const targetTeam = 'team' in res ? res.team : res;
+            const targetPlayer = 'player' in res ? res.player : player;
+            const teamId = typeof targetTeam === 'string' ? targetTeam : (targetTeam.id || (targetTeam as any)._id);
+            const playerId = typeof targetPlayer === 'string' ? targetPlayer : (targetPlayer.id || (targetPlayer as any)._id);
+
+            this.teamService.setCaptain(teamId, playerId).subscribe({
+              next: () => {
+                this.snackBar.open(`${targetPlayer.name} assigned as captain to ${targetTeam.name}`, 'Close', {
+                  duration: 4000,
+                });
+                this.loadCaptainAssignments();
+                this.fetchPlayers();
+              },
+              error: (err) => {
+                this.snackBar.open(err.error?.message || 'Failed to assign captain', 'Close', { duration: 4000 });
+              },
             });
           });
         },

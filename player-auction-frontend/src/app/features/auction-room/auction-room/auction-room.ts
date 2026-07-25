@@ -44,6 +44,8 @@ export class AuctionRoom implements OnInit {
   readonly soldFlash = signal(false);
 
   private auctionId: string | null = null;
+  /** Tracks which teams were already locked out so we don't re-toast. */
+  private prevLockedOutCount = 0;
 
   ngOnInit(): void {
     const auctionId = this.route.snapshot.paramMap.get('auctionId');
@@ -139,11 +141,18 @@ export class AuctionRoom implements OnInit {
   }
 
   private loadInitialState(auctionId: string): void {
-    this.auctionRoomService
-      .getById(auctionId)
+    this.adminService
+      .getSettings()
       .pipe(
-        switchMap((auction) =>
+        switchMap((settings) =>
           forkJoin({
+            settings: of(settings),
+            auction: this.auctionRoomService.getById(auctionId),
+          }),
+        ),
+        switchMap(({ settings, auction }) =>
+          forkJoin({
+            settings: of(settings),
             auction: of(auction),
             currentPlayer: auction.currentPlayer
               ? this.playerService.getById(auction.currentPlayer)
@@ -155,8 +164,8 @@ export class AuctionRoom implements OnInit {
           }),
         ),
       )
-      .subscribe(({ auction, currentPlayer, teams }) => {
-        this.store.loadFromAuction(auction, currentPlayer, teams.data);
+      .subscribe(({ settings, auction, currentPlayer, teams }) => {
+        this.store.loadFromAuction(auction, currentPlayer, teams.data, settings.requiredPlayersPerTeam);
         if (auction.playerState === AuctionPlayerState.SELECTING) {
           this.store.isRevealing.set(true);
         }
@@ -170,12 +179,18 @@ export class AuctionRoom implements OnInit {
     this.auctionRoomService
       .onPlayerSelected()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ player }) => this.store.setPlayerSelected(player));
+      .subscribe(({ player }) => {
+        this.store.setPlayerSelected(player);
+        this.prevLockedOutCount = 0; // reset for fresh bidding round
+      });
 
     this.auctionRoomService
       .onBidBumped()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ amount }) => this.store.applyBidBumped(amount));
+      .subscribe(({ amount }) => {
+        this.store.applyBidBumped(amount);
+        this.checkLockedOutTeams();
+      });
 
     this.auctionRoomService
       .onBidRejected()
@@ -249,6 +264,32 @@ export class AuctionRoom implements OnInit {
       .onRoundStarted()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ round }) => this.store.applyRoundStarted(round));
+  }
+
+  private checkLockedOutTeams(): void {
+    const locked = this.store.lockedOutTeamIds();
+    const required = this.store.requiredPlayersPerTeam();
+    if (locked.size === 0 || required === 0) {
+      this.prevLockedOutCount = 0;
+      return;
+    }
+    if (locked.size > this.prevLockedOutCount) {
+      const newlyLocked = locked.size - this.prevLockedOutCount;
+      const teamNames = this.store
+        .teams()
+        .filter((t) => locked.has(t.id))
+        .map((t) => t.name)
+        .join(', ');
+      const msg =
+        newlyLocked === 1
+          ? `⚠️ ${teamNames} can no longer afford this player and cannot complete their squad.`
+          : `⚠️ ${newlyLocked} teams (${teamNames}) are now locked out — they can't complete their squad.`;
+      this.snackBar.open(msg, 'Dismiss', {
+        duration: 6000,
+        panelClass: ['snack-locked-out'],
+      });
+      this.prevLockedOutCount = locked.size;
+    }
   }
 
   private flashSold(): void {

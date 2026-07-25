@@ -13,6 +13,16 @@
         <span class="team-detail__season">Season {{ t.season }}</span>
       </div>
       <div class="team-detail__header-actions">
+        <button mat-flat-button color="primary" (click)="assignCaptain()">
+          <mat-icon>star</mat-icon>
+          {{ t.captain ? 'Change Captain' : 'Assign Captain' }}
+        </button>
+        @if (t.captain) {
+          <button mat-button color="warn" (click)="removeCaptain()">
+            <mat-icon>star_border</mat-icon>
+            Remove Captain
+          </button>
+        }
         <button mat-button [routerLink]="['/teams', t.id, 'edit']">
           <mat-icon>edit</mat-icon>
           Edit

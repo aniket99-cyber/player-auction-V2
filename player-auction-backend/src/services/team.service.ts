@@ -1,6 +1,8 @@
+import { Types } from 'mongoose';
 import { ApiError } from '@utils/ApiError';
 import { eventBus } from '@events/EventBus';
 import { ITeam } from '@models/Team.model';
+import { PlayerAuctionStatus } from '@constants/enums';
 import { ITeamRepository } from '@repositories/interfaces/ITeamRepository';
 import { IPlayerRepository } from '@repositories/interfaces/IPlayerRepository';
 import { IAuditLogRepository } from '@repositories/interfaces/IAuditLogRepository';
@@ -74,31 +76,69 @@ export class TeamService {
     }
 
     if (input.captain) {
-      const isOnRoster = before.players.some((p) => p.toString() === input.captain);
-      if (!isOnRoster) {
-        throw ApiError.badRequest('Captain must be a player already on this team\'s roster');
+      const captainIdStr = typeof input.captain === 'object' && input.captain !== null
+        ? String((input.captain as Record<string, unknown>).id || (input.captain as Record<string, unknown>)._id)
+        : String(input.captain);
+
+      input.captain = captainIdStr;
+      const player = await this.playerRepository.findById(captainIdStr);
+      if (!player) {
+        throw ApiError.notFound('Player not found');
       }
 
-      // If there was a previous captain, reset their status to PENDING
-      if (before.captain) {
+      // If this player was previously on another team, clear them from that team's roster & captain
+      if (player.soldTo && player.soldTo.toString() !== teamId) {
+        const oldTeamId = player.soldTo.toString();
+        const oldTeam = await this.teamRepository.findById(oldTeamId);
+        if (oldTeam) {
+          const updateData: Record<string, unknown> = {
+            $pull: { players: player._id },
+          };
+          if (oldTeam.captain && oldTeam.captain.toString() === captainIdStr) {
+            updateData.$unset = { captain: '' };
+          }
+          await this.teamRepository.updateById(oldTeamId, updateData as never);
+        }
+      }
+
+      // If this player is currently recorded as captain of a different team, clear captain from that team
+      const existingTeamWithCaptain = await this.teamRepository.findOne({ captain: input.captain });
+      if (existingTeamWithCaptain && existingTeamWithCaptain._id.toString() !== teamId) {
+        await this.teamRepository.updateById(existingTeamWithCaptain._id.toString(), {
+          $unset: { captain: '' },
+          $pull: { players: new Types.ObjectId(input.captain) },
+        } as never);
+      }
+
+      // If this team already had a previous captain (and it's a different player), reset the previous captain's status
+      if (before.captain && before.captain.toString() !== input.captain) {
         const prevCaptain = await this.playerRepository.findById(before.captain.toString());
-        if (prevCaptain && prevCaptain.auctionStatus === 'CAPTAIN') {
+        if (prevCaptain && prevCaptain.auctionStatus === PlayerAuctionStatus.CAPTAIN) {
           await this.playerRepository.updateById(before.captain.toString(), {
-            auctionStatus: 'PENDING',
+            auctionStatus: PlayerAuctionStatus.PENDING,
+            $unset: { soldTo: '' },
           } as never);
         }
       }
 
-      // Set new captain's status to CAPTAIN
+      // Set new captain's status to CAPTAIN and set soldTo
       await this.playerRepository.updateById(input.captain, {
-        auctionStatus: 'CAPTAIN',
+        auctionStatus: PlayerAuctionStatus.CAPTAIN,
+        soldTo: new Types.ObjectId(teamId),
       } as never);
+
+      // Ensure player is included in team's players roster array
+      const isAlreadyOnRoster = before.players.some((p) => p.toString() === input.captain);
+      if (!isAlreadyOnRoster) {
+        (input as Record<string, unknown>).players = [...before.players, new Types.ObjectId(input.captain)];
+      }
     } else if (input.captain === null && before.captain) {
       // If captain is being removed, reset their status to PENDING
       const prevCaptain = await this.playerRepository.findById(before.captain.toString());
-      if (prevCaptain && prevCaptain.auctionStatus === 'CAPTAIN') {
+      if (prevCaptain && prevCaptain.auctionStatus === PlayerAuctionStatus.CAPTAIN) {
         await this.playerRepository.updateById(before.captain.toString(), {
-          auctionStatus: 'PENDING',
+          auctionStatus: PlayerAuctionStatus.PENDING,
+          $unset: { soldTo: '' },
         } as never);
       }
     }
@@ -140,7 +180,9 @@ export class TeamService {
 
     await this.playerRepository.updateById(input.playerId, {
       isRetained: true,
-      auctionStatus: 'RETAINED',
+      auctionStatus: PlayerAuctionStatus.RETAINED,
+      soldTo: new Types.ObjectId(input.teamId),
+      soldPrice: input.retentionPrice,
     } as never);
 
     await this.auditLogRepository.record({

@@ -6,7 +6,7 @@ export interface IAuditLog extends Document {
   actor: Types.ObjectId;
   action: string;
   entityType: string;
-  entityId: Types.ObjectId;
+  entityId: Types.ObjectId | string;
   before?: Record<string, unknown>;
   after?: Record<string, unknown>;
   createdAt: Date;
@@ -17,7 +17,7 @@ const auditLogSchema = new Schema<IAuditLog>(
     actor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     action: { type: String, required: true },
     entityType: { type: String, required: true },
-    entityId: { type: Schema.Types.ObjectId, required: true },
+    entityId: { type: Schema.Types.Mixed, required: true },
     before: { type: Schema.Types.Mixed },
     after: { type: Schema.Types.Mixed },
   },

@@ -102,14 +102,18 @@ export class AuthService {
 
   private async generateAndPersistTokens(user: IUser): Promise<AuthTokens> {
     const userId = user._id.toString();
+    const isUserAdmin = user.role === UserRole.ADMIN;
+    const accessExpiry = isUserAdmin ? '7d' : env.jwt.accessExpiry;
+    const refreshExpiry = isUserAdmin ? '30d' : env.jwt.refreshExpiry;
+
     const accessToken = jwt.sign(
       { sub: userId, role: user.role, team: user.team?.toString() },
       env.jwt.accessSecret,
-      { expiresIn: env.jwt.accessExpiry } as jwt.SignOptions,
+      { expiresIn: accessExpiry } as jwt.SignOptions,
     );
 
     const refreshToken = jwt.sign({ sub: userId }, env.jwt.refreshSecret, {
-      expiresIn: env.jwt.refreshExpiry,
+      expiresIn: refreshExpiry,
     } as jwt.SignOptions);
 
     const refreshTokenHash = await bcrypt.hash(refreshToken, SALT_ROUNDS);

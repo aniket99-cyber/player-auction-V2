@@ -122,8 +122,21 @@ export class Settings implements OnInit {
       .afterClosed()
       .subscribe((summary) => {
         if (!summary) return;
-        const total = summary.auctions + summary.teams + summary.players + summary.owners + summary.captains;
-        this.snackBar.open(`Session reset — ${total} records cleared`, 'Close', { duration: 5000 });
+        const total =
+          (summary.auctions || 0) +
+          (summary.teams || 0) +
+          (summary.players || 0) +
+          (summary.owners || 0) +
+          (summary.bids || 0) +
+          (summary.auditLogs || 0);
+        const parts: string[] = [];
+        if (summary.teams) parts.push(`${summary.teams} teams`);
+        if (summary.players) parts.push(`${summary.players} players`);
+        if (summary.owners) parts.push(`${summary.owners} owners`);
+        if (summary.auctions) parts.push(`${summary.auctions} auctions`);
+        if (summary.bids) parts.push(`${summary.bids} bids`);
+        const detail = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+        this.snackBar.open(`Session reset — ${total} records cleared${detail}`, 'Close', { duration: 7000 });
       });
   }
 }

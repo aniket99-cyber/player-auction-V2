@@ -11,6 +11,13 @@ import { PlayerService } from '../../players/services/player.service';
 import { FormationView } from '../../../shared/components/formation-view/formation-view';
 import { Player, Team } from '../../../core/models';
 
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  CaptainAssignmentDialog,
+  CaptainAssignmentDialogResult,
+} from '../../players/captain-assignment-dialog/captain-assignment-dialog';
+
 interface RoleStatChartOptions {
   series: ApexAxisChartSeries;
   chart: ApexChart;
@@ -36,6 +43,8 @@ export class TeamDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly teamService = inject(TeamService);
   private readonly playerService = inject(PlayerService);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly team = signal<Team | null>(null);
   readonly squad = signal<Player[]>([]);
@@ -68,12 +77,18 @@ export class TeamDetail implements OnInit {
 
   ngOnInit(): void {
     const teamId = this.route.snapshot.paramMap.get('id');
-    if (!teamId) return;
+    if (teamId) {
+      this.loadTeamData(teamId);
+    }
+  }
 
+  loadTeamData(teamId: string): void {
+    this.isLoading.set(true);
     this.teamService.getById(teamId).subscribe((team) => {
       this.team.set(team);
 
       if (team.players.length === 0) {
+        this.squad.set([]);
         this.isLoading.set(false);
         return;
       }
@@ -82,6 +97,51 @@ export class TeamDetail implements OnInit {
         this.squad.set(squad.data);
         this.isLoading.set(false);
       });
+    });
+  }
+
+  assignCaptain(): void {
+    const team = this.team();
+    if (!team) return;
+
+    this.teamService.list({ page: 1, limit: 1000 }).subscribe({
+      next: (result) => {
+        const dialogRef = this.dialog.open(CaptainAssignmentDialog, {
+          width: '520px',
+          data: {
+            team,
+            allTeams: result.data,
+          },
+        });
+
+        dialogRef.afterClosed().subscribe((res: CaptainAssignmentDialogResult | null) => {
+          if (!res || !res.team || !res.player) return;
+          const targetTeamId = typeof res.team === 'string' ? res.team : (res.team.id || (res.team as any)._id);
+          const targetPlayerId = typeof res.player === 'string' ? res.player : (res.player.id || (res.player as any)._id);
+
+          this.teamService.setCaptain(targetTeamId, targetPlayerId).subscribe({
+            next: () => {
+              this.snackBar.open(`${res.player.name} assigned as captain to ${res.team.name}`, 'Close', {
+                duration: 4000,
+              });
+              this.loadTeamData(targetTeamId);
+            },
+            error: (err) => {
+              this.snackBar.open(err.error?.message || 'Failed to assign captain', 'Close', { duration: 4000 });
+            },
+          });
+        });
+      },
+    });
+  }
+
+  removeCaptain(): void {
+    const team = this.team();
+    if (!team || !team.captain) return;
+
+    this.teamService.removeCaptain(team.id).subscribe(() => {
+      this.snackBar.open(`Captain removed from ${team.name}`, 'Close', { duration: 4000 });
+      this.loadTeamData(team.id);
     });
   }
 }
