@@ -29,7 +29,7 @@ export class AuctionController {
     res.status(200).json(new ApiResponse('Auctions retrieved', result));
   };
 
-  getActive = async (req: Request, res: Response): Promise<void> => {
+  getActive = async (_req: Request, res: Response): Promise<void> => {
     const auction = await this.auctionRepository.findActive();
     res.status(200).json(new ApiResponse('Active auction retrieved', auction));
   };
