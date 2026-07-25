@@ -13,8 +13,12 @@
   justify-content: center;
   min-height: 420px;
 
-  @media (max-width: 900px) {
-    min-height: 340px;
+  @media (max-width: 1024px) {
+    min-height: 360px;
+  }
+
+  @media (max-width: 600px) {
+    min-height: 320px;
   }
 
   &__empty {

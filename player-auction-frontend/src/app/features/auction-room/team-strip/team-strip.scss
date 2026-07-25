@@ -2,18 +2,30 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   padding: 12px;
   background: var(--auction-bg-surface);
   border: 1px solid var(--auction-border);
   border-radius: 12px;
 
+  @media (max-width: 1024px) {
+    padding: 10px;
+    gap: 8px;
+  }
+
   &__item {
     flex: 0 0 auto;
-    min-width: 110px;
+    min-width: 120px;
     padding: 10px 12px;
     border-radius: 10px;
     background: var(--auction-bg-surface-raised);
     transition: box-shadow 200ms ease;
+
+    @media (max-width: 600px) {
+      min-width: 100px;
+      padding: 8px 10px;
+    }
 
     &--active {
       box-shadow: var(--auction-shadow-glow-accent);

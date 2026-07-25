@@ -7,6 +7,16 @@
   position: relative;
   transition: background 300ms ease;
 
+  @media (max-width: 1024px) {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    padding: 12px;
+    gap: 12px;
+  }
+
   &--sold-flash {
     animation: sold-flash 1.5s ease;
   }
@@ -45,24 +55,27 @@
 
   &__layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: 24px;
     align-items: start;
 
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
       grid-template-columns: 1fr;
+      gap: 20px;
     }
   }
 
   &__stage {
     display: flex;
     justify-content: center;
+    width: 100%;
   }
 
   &__controls {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
   }
 
   &__bid-section {
@@ -91,8 +104,15 @@
     line-height: 1;
     color: var(--auction-accent);
     text-shadow: var(--auction-shadow-glow-accent);
-  }
 
+    @media (max-width: 1024px) {
+      font-size: 46px;
+    }
+
+    @media (max-width: 600px) {
+      font-size: 38px;
+    }
+  }
 }
 
 .status-dot {
@@ -112,3 +132,4 @@
   20% { background: rgba(244, 185, 66, 0.35); }
   100% { background: transparent; }
 }
+
