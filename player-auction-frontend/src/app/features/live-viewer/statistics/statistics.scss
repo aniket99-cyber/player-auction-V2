@@ -1,21 +1,234 @@
 .statistics {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 
   &__panel {
-    background: var(--auction-bg-surface);
-    border: 1px solid var(--auction-border);
-    border-radius: 14px;
-    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__count-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+
+    &--unsold {
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+
+    &--pending {
+      background: rgba(57, 135, 229, 0.15);
+      color: #3987e5;
+      border: 1px solid rgba(57, 135, 229, 0.3);
+    }
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--auction-glass-border);
+  }
+
+  &__page-btn {
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: var(--auction-bg-surface);
+    border: 1px solid var(--auction-glass-border);
+    color: var(--auction-text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 200ms ease;
+
+    &:hover:not(:disabled) {
+      background: var(--auction-bg-surface-raised);
+      border-color: var(--auction-accent);
+      color: var(--auction-accent);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__page-info {
+    color: var(--auction-text-secondary);
+    font-size: 12px;
+
+    strong {
+      color: var(--auction-text-primary);
+    }
+  }
+}
+
+// Re-use exact leaderboard row & container styles
+.leaderboard {
+  background: var(--auction-glass-fill);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--auction-glass-border);
+  border-radius: 14px;
+  padding: 12px;
 
   &__title {
     color: var(--auction-text-primary);
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin: 0 0 8px;
+    margin: 0 0 10px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 240px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 20px 36px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--auction-bg-surface);
+    animation: row-in 300ms ease;
+    transition: box-shadow 250ms ease, background 250ms ease;
+  }
+
+  &__rank {
+    color: var(--auction-text-secondary);
+    font-weight: 700;
+    font-size: 12px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__player-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid var(--auction-glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--auction-text-primary);
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  &__name {
+    color: var(--auction-text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__team-name {
+    color: var(--auction-text-secondary);
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__price-block {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+
+  &__spent {
+    color: var(--auction-gold);
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  &__unit {
+    color: var(--auction-text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  &__empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--auction-text-secondary);
+    font-size: 12px;
+    font-style: italic;
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .leaderboard {
+    padding: 16px;
+
+    &__row {
+      grid-template-columns: 24px 42px 1fr auto;
+      padding: 10px 12px;
+    }
+
+    &__player-avatar {
+      width: 42px;
+      height: 42px;
+      font-size: 14px;
+    }
+
+    &__name {
+      font-size: 14px;
+    }
+
+    &__spent {
+      font-size: 16px;
+    }
   }
 }
 

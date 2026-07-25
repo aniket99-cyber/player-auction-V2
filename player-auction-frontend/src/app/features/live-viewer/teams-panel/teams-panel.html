@@ -1,11 +1,14 @@
 <div class="teams-panel">
   <h3 class="teams-panel__title">Teams</h3>
   <div class="teams-panel__list">
-    @for (team of teams(); track team.id) {
+    @for (team of teams(); track getTeamId(team)) {
       <app-team-field-card
         [team]="team"
         [roster]="rosterFor(team)"
-        [isActive]="team.id === activeTeamId()"
+        [isActive]="getTeamId(team) === activeTeamId()"
+        [requiredPlayersPerTeam]="requiredPlayersPerTeam()"
+        [isExpanded]="isExpanded(team)"
+        (toggled)="toggleTeam(team)"
       />
     }
   </div>

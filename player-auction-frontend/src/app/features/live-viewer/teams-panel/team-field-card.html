@@ -18,11 +18,15 @@
       }
     </div>
 
+    <div class="team-field-card__squad" [title]="'Players: ' + squadCountText()">
+      <span class="team-field-card__squad-badge" [class.team-field-card__squad-badge--full]="isSquadFull()">
+        <span class="team-field-card__squad-icon">👥</span>
+        <span class="team-field-card__squad-text">{{ squadCountText() }}</span>
+      </span>
+    </div>
+
     <div class="team-field-card__budget">
       <span class="team-field-card__budget-value">{{ team().remainingBudget }}</span>
-      <div class="team-field-card__budget-meter">
-        <div class="team-field-card__budget-fill" [style.width.%]="budgetUsedPercent()"></div>
-      </div>
     </div>
 
     <span class="team-field-card__chevron" [class.team-field-card__chevron--open]="isExpanded()">›</span>

@@ -1,27 +1,133 @@
 <div class="statistics">
-  <div class="statistics__panel">
-    <h3 class="statistics__title">Team Spend</h3>
-    <apx-chart
-      [series]="teamSpendChart().series"
-      [chart]="teamSpendChart().chart"
-      [xaxis]="teamSpendChart().xaxis"
-      [dataLabels]="teamSpendChart().dataLabels"
-      [stroke]="teamSpendChart().stroke"
-      [grid]="teamSpendChart().grid"
-      [colors]="teamSpendChart().colors"
-    />
+  <!-- Unsold Players Panel -->
+  <div class="leaderboard statistics__panel">
+    <div class="statistics__header">
+      <h3 class="leaderboard__title statistics__title-row">
+        <span>Unsold Players</span>
+        <span class="statistics__count-badge statistics__count-badge--unsold">{{ unsoldPlayers().length }}</span>
+      </h3>
+    </div>
+
+    <div class="leaderboard__list">
+      @for (player of paginatedUnsold(); track player.id; let idx = $index) {
+        <div class="leaderboard__row">
+          <span class="leaderboard__rank">{{ (unsoldPage() - 1) * pageSize + idx + 1 }}</span>
+
+          <div class="leaderboard__player-avatar">
+            @if (player.imageUrl) {
+              <img [src]="player.imageUrl" [alt]="player.name" />
+            } @else {
+              <span>{{ player.name.charAt(0) }}</span>
+            }
+          </div>
+
+          <div class="leaderboard__info">
+            <span class="leaderboard__name">{{ player.name }}</span>
+            <span class="leaderboard__team-name">{{ player.role }}</span>
+          </div>
+
+          <div class="leaderboard__price-block">
+            <span class="leaderboard__spent">{{ player.basePrice }}</span>
+            <span class="leaderboard__unit">pts</span>
+          </div>
+        </div>
+      } @empty {
+        <div class="leaderboard__empty">
+          <span>No unsold players</span>
+        </div>
+      }
+    </div>
+
+    @if (totalUnsoldPages() > 1) {
+      <div class="statistics__pagination">
+        <button
+          type="button"
+          class="statistics__page-btn"
+          [disabled]="unsoldPage() === 1"
+          (click)="prevUnsoldPage()"
+        >
+          ‹ Prev
+        </button>
+
+        <span class="statistics__page-info">
+          Page <strong>{{ unsoldPage() }}</strong> of <strong>{{ totalUnsoldPages() }}</strong>
+        </span>
+
+        <button
+          type="button"
+          class="statistics__page-btn"
+          [disabled]="unsoldPage() === totalUnsoldPages()"
+          (click)="nextUnsoldPage()"
+        >
+          Next ›
+        </button>
+      </div>
+    }
   </div>
 
-  <div class="statistics__panel">
-    <h3 class="statistics__title">Role Distribution</h3>
-    <apx-chart
-      [series]="roleDistributionChart().series"
-      [chart]="roleDistributionChart().chart"
-      [xaxis]="roleDistributionChart().xaxis"
-      [dataLabels]="roleDistributionChart().dataLabels"
-      [stroke]="roleDistributionChart().stroke"
-      [grid]="roleDistributionChart().grid"
-      [colors]="roleDistributionChart().colors"
-    />
+  <!-- Pending Players Panel -->
+  <div class="leaderboard statistics__panel">
+    <div class="statistics__header">
+      <h3 class="leaderboard__title statistics__title-row">
+        <span>Pending Players</span>
+        <span class="statistics__count-badge statistics__count-badge--pending">{{ pendingPlayers().length }}</span>
+      </h3>
+    </div>
+
+    <div class="leaderboard__list">
+      @for (player of paginatedPending(); track player.id; let idx = $index) {
+        <div class="leaderboard__row">
+          <span class="leaderboard__rank">{{ (pendingPage() - 1) * pageSize + idx + 1 }}</span>
+
+          <div class="leaderboard__player-avatar">
+            @if (player.imageUrl) {
+              <img [src]="player.imageUrl" [alt]="player.name" />
+            } @else {
+              <span>{{ player.name.charAt(0) }}</span>
+            }
+          </div>
+
+          <div class="leaderboard__info">
+            <span class="leaderboard__name">{{ player.name }}</span>
+            <span class="leaderboard__team-name">{{ player.role }}</span>
+          </div>
+
+          <div class="leaderboard__price-block">
+            <span class="leaderboard__spent">{{ player.basePrice }}</span>
+            <span class="leaderboard__unit">pts</span>
+          </div>
+        </div>
+      } @empty {
+        <div class="leaderboard__empty">
+          <span>No pending players in queue</span>
+        </div>
+      }
+    </div>
+
+    @if (totalPendingPages() > 1) {
+      <div class="statistics__pagination">
+        <button
+          type="button"
+          class="statistics__page-btn"
+          [disabled]="pendingPage() === 1"
+          (click)="prevPendingPage()"
+        >
+          ‹ Prev
+        </button>
+
+        <span class="statistics__page-info">
+          Page <strong>{{ pendingPage() }}</strong> of <strong>{{ totalPendingPages() }}</strong>
+        </span>
+
+        <button
+          type="button"
+          class="statistics__page-btn"
+          [disabled]="pendingPage() === totalPendingPages()"
+          (click)="nextPendingPage()"
+        >
+          Next ›
+        </button>
+      </div>
+    }
   </div>
 </div>

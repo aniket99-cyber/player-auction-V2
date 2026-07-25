@@ -13,7 +13,7 @@
 
   &__header {
     display: grid;
-    grid-template-columns: 40px 1fr auto 16px;
+    grid-template-columns: 40px 1fr auto auto 16px;
     align-items: center;
     gap: 8px;
     width: 100%;
@@ -69,12 +69,43 @@
     text-overflow: ellipsis;
   }
 
+  &__squad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__squad-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: var(--auction-bg-overlay, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--auction-border, rgba(255, 255, 255, 0.1));
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--auction-text-primary, #ffffff);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    &--full {
+      background: rgba(46, 213, 115, 0.15);
+      border-color: rgba(46, 213, 115, 0.4);
+      color: #2ed573;
+    }
+  }
+
+  &__squad-icon {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+
   &__budget {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-    min-width: 64px;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 48px;
   }
 
   &__budget-value {
@@ -82,20 +113,6 @@
     font-weight: 700;
     font-size: 13px;
     font-variant-numeric: tabular-nums;
-  }
-
-  &__budget-meter {
-    width: 56px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--auction-bg-overlay);
-    overflow: hidden;
-  }
-
-  &__budget-fill {
-    height: 100%;
-    background: var(--auction-accent);
-    transition: width 300ms ease;
   }
 
   &__chevron {
@@ -129,7 +146,7 @@
 @media (min-width: 768px) {
   .team-field-card {
     &__header {
-      grid-template-columns: 48px 1fr auto 16px;
+      grid-template-columns: 48px 1fr auto auto 16px;
       padding: 14px 16px;
     }
 

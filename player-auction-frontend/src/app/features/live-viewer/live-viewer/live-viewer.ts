@@ -10,6 +10,7 @@ import { AuctionRoomStore } from '../../auction-room/services/auction-room.store
 import { LiveViewerStore } from '../services/live-viewer.store';
 import { PlayerService } from '../../players/services/player.service';
 import { TeamService } from '../../teams/services/team.service';
+import { AdminService } from '../../settings/services/admin.service';
 import { PlayerAuctionStatus } from '../../../core/models';
 import { PlayerStage } from '../../auction-room/player-stage/player-stage';
 import { Leaderboard } from '../leaderboard/leaderboard';
@@ -39,6 +40,7 @@ export class LiveViewer implements OnInit {
   private readonly auctionRoomService = inject(AuctionRoomService);
   private readonly playerService = inject(PlayerService);
   private readonly teamService = inject(TeamService);
+  private readonly adminService = inject(AdminService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly store = inject(AuctionRoomStore);
@@ -149,12 +151,13 @@ export class LiveViewer implements OnInit {
               auction.participatingTeams.length > 0
                 ? this.teamService.getByIds(auction.participatingTeams)
                 : of({ data: [], total: 0, page: 1, limit: 0, totalPages: 1 }),
+            settings: this.adminService.getSettings(),
           }),
         ),
       )
       .subscribe({
-        next: ({ auction, currentPlayer, teams }) => {
-          this.store.loadFromAuction(auction, currentPlayer, teams.data);
+        next: ({ auction, currentPlayer, teams, settings }) => {
+          this.store.loadFromAuction(auction, currentPlayer, teams.data, settings.requiredPlayersPerTeam);
           this.viewerStore.setRemainingInPool(auction.playerQueue.length);
 
           const allPlayerIds = [

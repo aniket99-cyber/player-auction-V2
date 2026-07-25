@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { Owner, Player, Team } from '../../../core/models';
 import { OwnerService } from '../../owners/services/owner.service';
 import { FormationView } from '../../../shared/components/formation-view/formation-view';
@@ -15,8 +15,10 @@ export class TeamFieldCard {
   readonly team = input.required<Team>();
   readonly roster = input.required<Player[]>();
   readonly isActive = input(false);
+  readonly requiredPlayersPerTeam = input<number>(0);
+  readonly isExpanded = input(false);
 
-  readonly isExpanded = signal(false);
+  readonly toggled = output<void>();
   readonly owner = signal<Owner | null>(null);
 
   readonly captainName = computed(() => {
@@ -25,20 +27,31 @@ export class TeamFieldCard {
     return this.roster().find((p) => p.id === captainId)?.name ?? null;
   });
 
-  readonly budgetUsedPercent = computed(() => {
-    const t = this.team();
-    if (t.totalBudget === 0) return 0;
-    return Math.round(((t.totalBudget - t.remainingBudget) / t.totalBudget) * 100);
+  readonly playerCount = computed(() => {
+    return this.team().players?.length ?? this.roster().length;
+  });
+
+  readonly squadCountText = computed(() => {
+    const count = this.playerCount();
+    const req = this.requiredPlayersPerTeam();
+    return req > 0 ? `${count}/${req}` : `${count}`;
+  });
+
+  readonly isSquadFull = computed(() => {
+    const req = this.requiredPlayersPerTeam();
+    return req > 0 && this.playerCount() >= req;
   });
 
   constructor() {
     effect(() => {
-      const teamId = this.team().id;
-      this.ownerService.getByTeam(teamId).subscribe((owner) => this.owner.set(owner));
+      const teamId = this.team().id || (this.team() as any)._id;
+      if (teamId) {
+        this.ownerService.getByTeam(teamId).subscribe((owner) => this.owner.set(owner));
+      }
     });
   }
 
   toggleExpanded(): void {
-    this.isExpanded.set(!this.isExpanded());
+    this.toggled.emit();
   }
 }
