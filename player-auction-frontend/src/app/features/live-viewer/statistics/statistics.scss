@@ -13,6 +13,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 10px;
   }
 
   &__count-badge {
@@ -35,49 +36,26 @@
     }
   }
 
-  &__pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid var(--auction-glass-border);
-  }
+  // Scrollable list — mobile uses natural touch scroll, desktop gets a fixed cap
+  &__list {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 2px;
 
-  &__page-btn {
-    padding: 5px 12px;
-    border-radius: 8px;
-    background: var(--auction-bg-surface);
-    border: 1px solid var(--auction-glass-border);
-    color: var(--auction-text-primary);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 200ms ease;
-
-    &:hover:not(:disabled) {
-      background: var(--auction-bg-surface-raised);
-      border-color: var(--auction-accent);
-      color: var(--auction-accent);
+    &::-webkit-scrollbar {
+      width: 4px;
     }
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+    &::-webkit-scrollbar-track {
+      background: transparent;
     }
-  }
-
-  &__page-info {
-    color: var(--auction-text-secondary);
-    font-size: 12px;
-
-    strong {
-      color: var(--auction-text-primary);
+    &::-webkit-scrollbar-thumb {
+      background: var(--auction-glass-border, rgba(255, 255, 255, 0.12));
+      border-radius: 4px;
     }
   }
 }
 
-// Re-use exact leaderboard row & container styles
+// Leaderboard card base styles — reused here so both panels look identical
 .leaderboard {
   background: var(--auction-glass-fill);
   backdrop-filter: blur(16px) saturate(140%);
@@ -90,14 +68,13 @@
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin: 0 0 10px;
+    margin: 0;
   }
 
   &__list {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    min-height: 240px;
   }
 
   &__row {
@@ -164,6 +141,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-transform: capitalize;
   }
 
   &__price-block {
@@ -207,6 +185,14 @@
   }
 }
 
+// Mobile — taller scroll area so it's easy to swipe through
+@media (max-width: 767px) {
+  .statistics__list {
+    max-height: 220px;
+  }
+}
+
+// Tablet / desktop — side by side panels, each with its own scroll
 @media (min-width: 768px) {
   .leaderboard {
     padding: 16px;
@@ -238,6 +224,11 @@
 
     &__panel {
       flex: 1;
+      min-width: 0;
     }
+  }
+
+  .statistics__list {
+    max-height: 320px;
   }
 }

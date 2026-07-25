@@ -2,7 +2,7 @@ import { Component, DestroyRef, ElementRef, OnInit, inject, signal, viewChild } 
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import gsap from 'gsap';
 import { AuctionService } from '../../auctions/services/auction.service';
 import { AuctionRoomService } from '../../auction-room/services/auction-room.service';
@@ -151,7 +151,9 @@ export class LiveViewer implements OnInit {
               auction.participatingTeams.length > 0
                 ? this.teamService.getByIds(auction.participatingTeams)
                 : of({ data: [], total: 0, page: 1, limit: 0, totalPages: 1 }),
-            settings: this.adminService.getSettings(),
+            settings: this.adminService
+              .getSettings()
+              .pipe(catchError(() => of({ requiredPlayersPerTeam: 0 }))),
           }),
         ),
       )

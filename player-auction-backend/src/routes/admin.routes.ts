@@ -43,10 +43,9 @@ router.post(
   asyncHandler(adminController.resetSession),
 );
 
-// Reads are open to any authenticated role — the Team/Auction creation
-// forms need these defaults regardless of who's filling them out. Only
-// changing the defaults is admin-only.
-router.get('/settings', authenticate, asyncHandler(adminController.getSettings));
+// Reads are open to everyone — needed by public Live Viewer & forms.
+// Only changing the settings is admin-only.
+router.get('/settings', asyncHandler(adminController.getSettings));
 router.patch(
   '/settings',
   authenticate,

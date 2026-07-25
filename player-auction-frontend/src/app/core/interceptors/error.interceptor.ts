@@ -17,6 +17,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         req.url.includes('/auth/register') ||
         req.url.includes('/auth/refresh');
 
+      const isPublicView =
+        router.url.startsWith('/live') || router.url.startsWith('/watch');
+
       // Handle 401 Unauthorized — attempt silent token refresh
       if (error.status === 401 && !isAuthRoute) {
         const refreshToken = authService.getRefreshToken();
@@ -30,15 +33,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             }),
             catchError((refreshErr) => {
               authService.clearSession();
-              router.navigate(['/auth/login']);
-              snackBar.open('Session expired. Please log in again.', 'Close', {
-                duration: 5000,
-                panelClass: ['snack-error'],
-              });
+              if (!isPublicView) {
+                router.navigate(['/auth/login']);
+                snackBar.open('Session expired. Please log in again.', 'Close', {
+                  duration: 5000,
+                  panelClass: ['snack-error'],
+                });
+              }
               return throwError(() => refreshErr);
             }),
           );
-        } else {
+        } else if (!isPublicView) {
           authService.clearSession();
           router.navigate(['/auth/login']);
         }
