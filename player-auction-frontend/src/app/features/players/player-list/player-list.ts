@@ -23,6 +23,7 @@ import {
   CaptainAssignmentDialog,
   CaptainAssignmentDialogResult,
 } from '../captain-assignment-dialog/captain-assignment-dialog';
+import { ResetPlayersDialog } from '../reset-players-dialog/reset-players-dialog';
 import {
   PaginatedResult,
   Player,
@@ -202,6 +203,25 @@ export class PlayerList implements OnInit {
 
   openDeletedPlayers(): void {
     this.router.navigate(['/players/deleted']);
+  }
+
+  openResetAllDialog(): void {
+    const dialogRef = this.dialog.open<
+      ResetPlayersDialog,
+      unknown,
+      { modifiedCount: number } | undefined
+    >(ResetPlayersDialog, { width: '480px' });
+
+    dialogRef.afterClosed().subscribe((summary) => {
+      if (!summary) return;
+      this.snackBar.open(
+        `${summary.modifiedCount} players reset — no captains or retentions remain`,
+        'Close',
+        { duration: 5000 },
+      );
+      this.loadCaptainAssignments();
+      this.fetchPlayers();
+    });
   }
 
   viewPlayer(player: Player): void {
@@ -416,5 +436,21 @@ export class PlayerList implements OnInit {
       .onBulkStatusChanged()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.fetchPlayers());
+
+    this.playerService
+      .onResetForAuction()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.loadCaptainAssignments();
+        this.fetchPlayers();
+      });
+
+    this.playerService
+      .onResetAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.loadCaptainAssignments();
+        this.fetchPlayers();
+      });
   }
 }

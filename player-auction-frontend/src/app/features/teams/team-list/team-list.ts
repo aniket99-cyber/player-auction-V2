@@ -23,6 +23,7 @@ import {
   CaptainAssignmentDialog,
   CaptainAssignmentDialogResult,
 } from '../../players/captain-assignment-dialog/captain-assignment-dialog';
+import { ResetForAuctionDialog } from '../reset-for-auction-dialog/reset-for-auction-dialog';
 
 @Component({
   selector: 'app-team-list',
@@ -167,6 +168,24 @@ export class TeamList implements OnInit {
 
   openDeletedTeams(): void {
     this.router.navigate(['/teams/deleted']);
+  }
+
+  openResetForAuctionDialog(): void {
+    const dialogRef = this.dialog.open<
+      ResetForAuctionDialog,
+      unknown,
+      { modifiedCount: number } | undefined
+    >(ResetForAuctionDialog, { width: '480px' });
+
+    dialogRef.afterClosed().subscribe((summary) => {
+      if (!summary) return;
+      this.snackBar.open(
+        `${summary.modifiedCount} teams reset for auction — captains and retentions preserved`,
+        'Close',
+        { duration: 5000 },
+      );
+      this.fetchTeams();
+    });
   }
 
   viewTeam(team: Team): void {
@@ -316,6 +335,16 @@ export class TeamList implements OnInit {
 
     this.teamService
       .onBulkStatusChanged()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.fetchTeams());
+
+    this.teamService
+      .onResetForAuction()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.fetchTeams());
+
+    this.teamService
+      .onResetAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.fetchTeams());
   }

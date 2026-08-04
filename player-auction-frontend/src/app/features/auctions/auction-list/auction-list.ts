@@ -3,7 +3,9 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { AuctionService } from '../services/auction.service';
+import { ConfirmDialog } from '../../../shared/components/confirm-dialog';
 import { Auction } from '../../../core/models';
 
 @Component({
@@ -16,6 +18,7 @@ export class AuctionList implements OnInit {
   private readonly auctionService = inject(AuctionService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   readonly auctions = signal<Auction[]>([]);
   readonly isLoading = signal(true);
@@ -54,6 +57,30 @@ export class AuctionList implements OnInit {
         },
       });
     }
+  }
+
+  deleteAuction(auction: Auction): void {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Delete auction room?',
+        message: `Permanently delete "${auction.name}"? This cannot be undone.`,
+        confirmLabel: 'Delete',
+        isDestructive: true,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.auctionService.delete(auction.id).subscribe({
+        next: () => {
+          this.snackBar.open(`"${auction.name}" deleted`, 'Close', { duration: 4000 });
+          this.fetch();
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.message || 'Failed to delete auction', 'Close', { duration: 4000 });
+        },
+      });
+    });
   }
 
   copyViewerLink(): void {

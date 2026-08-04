@@ -1,0 +1,16 @@
+.reset-dialog {
+  &__warning {
+    color: var(--auction-danger);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  &__error {
+    color: var(--auction-danger);
+    font-size: 13px;
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}

@@ -41,4 +41,8 @@ export class AuctionService {
   deactivate(id: string): Observable<Auction> {
     return this.api.post<Auction>(`/auctions/${id}/deactivate`, {});
   }
+
+  delete(id: string): Observable<void> {
+    return this.api.delete<void>(`/auctions/${id}`);
+  }
 }

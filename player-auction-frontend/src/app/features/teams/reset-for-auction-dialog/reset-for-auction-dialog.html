@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>Reset Teams for Auction</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <p class="reset-dialog__warning">
+      Every team's squad is cleared back to just its captain and retained players, and remaining budget is
+      restored to the total budget minus retention costs (captains cost nothing). Players who were bought at
+      auction return to the pool as PENDING. Captains and retentions are not affected. This cannot be undone.
+    </p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Type "{{ confirmPhrase }}" to confirm</mat-label>
+      <input matInput formControlName="confirmation" autocomplete="off" />
+      @if (form.controls.confirmation.hasError('mismatch') && form.controls.confirmation.touched) {
+        <mat-error>Type "{{ confirmPhrase }}" exactly to confirm</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="reset-dialog__error">{{ message }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="warn" type="submit" [disabled]="isSubmitting()">
+      Reset Teams
+    </button>
+  </mat-dialog-actions>
+</form>

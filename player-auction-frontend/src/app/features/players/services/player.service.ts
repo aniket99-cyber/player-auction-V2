@@ -83,6 +83,11 @@ export class PlayerService {
     return this.api.get<AuditLogEntry[]>(`/players/${id}/audit-history`);
   }
 
+  /** Full reset: every player becomes PENDING with no team; teams lose captains/retentions and regain full budget. */
+  resetAll(): Observable<{ modifiedCount: number }> {
+    return this.api.post<{ modifiedCount: number }>('/players/reset-all', {});
+  }
+
   importCsv(file: File): Observable<PlayerImportResult> {
     const formData = new FormData();
     formData.append('file', file);
@@ -128,5 +133,13 @@ export class PlayerService {
       PLAYER_NAMESPACE,
       'player:bulkStatusChanged',
     );
+  }
+
+  onResetForAuction(): Observable<{ modifiedCount: number }> {
+    return this.socketService.on<{ modifiedCount: number }>(PLAYER_NAMESPACE, 'player:resetForAuction');
+  }
+
+  onResetAll(): Observable<{ modifiedCount: number }> {
+    return this.socketService.on<{ modifiedCount: number }>(PLAYER_NAMESPACE, 'player:resetAll');
   }
 }

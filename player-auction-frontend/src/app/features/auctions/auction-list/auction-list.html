@@ -48,6 +48,9 @@
               <mat-icon>{{ auction.isActive ? 'power_settings_new' : 'sensors' }}</mat-icon>
               {{ auction.isActive ? 'Deactivate' : 'Activate Live Feed' }}
             </button>
+            <button mat-icon-button color="warn" (click)="deleteAuction(auction)" aria-label="Delete auction">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
         </div>
       }

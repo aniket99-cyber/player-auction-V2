@@ -82,6 +82,11 @@ export class TeamService {
     return this.api.get<AuditLogEntry[]>(`/teams/${id}/audit-history`);
   }
 
+  /** Restarts every team for a new auction round: keeps captains + retentions, restores remainingBudget. */
+  resetForAuction(): Observable<{ modifiedCount: number }> {
+    return this.api.post<{ modifiedCount: number }>('/teams/reset-for-auction', {});
+  }
+
   importCsv(file: File): Observable<ImportResult> {
     const formData = new FormData();
     formData.append('file', file);
@@ -127,5 +132,13 @@ export class TeamService {
       TEAM_NAMESPACE,
       'team:bulkStatusChanged',
     );
+  }
+
+  onResetForAuction(): Observable<{ modifiedCount: number }> {
+    return this.socketService.on<{ modifiedCount: number }>(TEAM_NAMESPACE, 'team:resetForAuction');
+  }
+
+  onResetAll(): Observable<{ modifiedCount: number }> {
+    return this.socketService.on<{ modifiedCount: number }>(TEAM_NAMESPACE, 'team:resetAll');
   }
 }
