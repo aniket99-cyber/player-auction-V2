@@ -41,6 +41,7 @@ router.post('/:id/activate', authenticate, authorize(UserRole.ADMIN), asyncHandl
 router.post('/:id/deactivate', authenticate, authorize(UserRole.ADMIN), asyncHandler(auctionController.deactivate));
 
 router.get('/:id', asyncHandler(auctionController.getById));
+router.delete('/:id', authenticate, authorize(UserRole.ADMIN), asyncHandler(auctionController.remove));
 router.patch(
   '/:id/queue',
   authenticate,

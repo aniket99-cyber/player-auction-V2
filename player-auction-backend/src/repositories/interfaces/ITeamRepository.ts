@@ -18,4 +18,13 @@ export interface ITeamRepository extends IRepository<ITeam> {
       approvedBy: string;
     },
   ): Promise<ITeam | null>;
+  /**
+   * Restarts every team for a new auction: keeps `captain` and `retentions`
+   * as-is, resets `players` to just the captain + retained player ids, and
+   * restores `remainingBudget` to `totalBudget` minus the sum of retention
+   * prices (captains cost nothing).
+   */
+  resetForAuction(): Promise<number>;
+  /** Full wipe: clears captain, retentions, players, and restores remainingBudget to totalBudget. */
+  resetAll(): Promise<number>;
 }

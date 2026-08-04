@@ -3,6 +3,7 @@ import { PlayerController } from '@controllers/player.controller';
 import { PlayerService } from '@services/player.service';
 import { PlayerImportService } from '@services/player-import.service';
 import { PlayerRepository } from '@repositories/implementations/PlayerRepository';
+import { TeamRepository } from '@repositories/implementations/TeamRepository';
 import { AuditLogRepository } from '@repositories/implementations/AuditLogRepository';
 import { validate } from '@middleware/validate.middleware';
 import { authenticate, authorize } from '@middleware/auth.middleware';
@@ -19,7 +20,7 @@ import { UserRole } from '@constants/enums';
 const router = Router();
 
 const playerRepository = new PlayerRepository();
-const playerService = new PlayerService(playerRepository, new AuditLogRepository());
+const playerService = new PlayerService(playerRepository, new AuditLogRepository(), new TeamRepository());
 const playerImportService = new PlayerImportService(new AuditLogRepository());
 const playerController = new PlayerController(playerService, playerImportService, playerRepository);
 
@@ -57,6 +58,13 @@ router.patch(
   authorize(UserRole.ADMIN),
   validate(bulkAuctionStatusSchema),
   asyncHandler(playerController.bulkUpdateAuctionStatus),
+);
+
+router.post(
+  '/reset-all',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  asyncHandler(playerController.resetAll),
 );
 
 // Public reads: the Live Viewer needs player details (name, photo, stats)

@@ -261,4 +261,31 @@ export class TeamService {
   async getAuditHistory(teamId: string) {
     return this.auditLogRepository.findByEntity('Team', teamId);
   }
+
+  /**
+   * Restarts every team for a fresh auction round: captains and retentions
+   * are preserved (captains cost nothing, retentions keep their locked-in
+   * price), every other player is released back to the pool as PENDING, and
+   * remainingBudget is restored to totalBudget minus retention costs.
+   */
+  async resetForAuction(actorId: string): Promise<number> {
+    const [teamsModified, playersModified] = await Promise.all([
+      this.teamRepository.resetForAuction(),
+      this.playerRepository.resetForAuction(),
+    ]);
+
+    await this.auditLogRepository.record({
+      actor: actorId,
+      action: 'team.resetForAuction',
+      entityType: 'Team',
+      entityId: 'all',
+      after: { teamsModified, playersModified },
+    });
+
+    eventBus.emit('team.resetForAuction', { modifiedCount: teamsModified });
+    if (playersModified > 0) {
+      eventBus.emit('player.resetForAuction', { modifiedCount: playersModified });
+    }
+    return teamsModified;
+  }
 }

@@ -142,6 +142,12 @@ export class AuctionController {
     res.status(200).json(new ApiResponse('Next round started'));
   };
 
+  remove = async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) throw ApiError.unauthorized();
+    await this.auctionService.deleteAuction(req.params.id, req.user.sub);
+    res.status(200).json(new ApiResponse('Auction deleted'));
+  };
+
   bidHistory = async (req: Request, res: Response): Promise<void> => {
     let playerId = req.query.playerId as string | undefined;
 

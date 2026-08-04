@@ -523,6 +523,33 @@ export class AuctionService {
     this.roundStartQueueSize.clear();
   }
 
+  /**
+   * Permanently deletes an auction room, regardless of its current status —
+   * the admin may delete a room mid-bid. Cancels any pending in-memory
+   * selection timeout first so it can't fire against a now-deleted document.
+   */
+  async deleteAuction(auctionId: string, actorId: string): Promise<void> {
+    const auction = await this.requireAuction(auctionId);
+
+    this.clearPendingTimeout(auctionId);
+    this.roundStartQueueSize.delete(auctionId);
+
+    const deleted = await this.auctionRepository.deleteById(auctionId);
+    if (!deleted) {
+      throw ApiError.notFound('Auction not found');
+    }
+
+    await this.auditLogRepository.record({
+      actor: actorId,
+      action: 'auction.deleted',
+      entityType: 'Auction',
+      entityId: auctionId,
+      before: auction.toObject(),
+    });
+
+    eventBus.emit('auction.deleted', { auctionId });
+  }
+
   private async requireAuction(auctionId: string): Promise<IAuction> {
     const auction = await this.auctionRepository.findById(auctionId);
     if (!auction) {

@@ -4,6 +4,7 @@ import { eventBus } from '@events/EventBus';
 import { IPlayer } from '@models/Player.model';
 import { PlayerAuctionStatus, PlayerRole } from '@constants/enums';
 import { IPlayerRepository } from '@repositories/interfaces/IPlayerRepository';
+import { ITeamRepository } from '@repositories/interfaces/ITeamRepository';
 import { IAuditLogRepository } from '@repositories/interfaces/IAuditLogRepository';
 
 interface CreatePlayerInput {
@@ -39,6 +40,7 @@ export class PlayerService {
   constructor(
     private readonly playerRepository: IPlayerRepository,
     private readonly auditLogRepository: IAuditLogRepository,
+    private readonly teamRepository?: ITeamRepository,
   ) {}
 
   private async recordAuditLog(entry: {
@@ -185,5 +187,31 @@ export class PlayerService {
 
   async getAuditHistory(playerId: string) {
     return this.auditLogRepository.findByEntity('Player', playerId);
+  }
+
+  /**
+   * Full reset for a brand-new auction: every player goes back to PENDING
+   * with no team/price/retention, and every team's captain, retentions, and
+   * roster are cleared with remainingBudget restored to totalBudget.
+   */
+  async resetAll(actorId: string): Promise<number> {
+    const [playersModified, teamsModified] = await Promise.all([
+      this.playerRepository.resetAll(),
+      this.teamRepository?.resetAll() ?? Promise.resolve(0),
+    ]);
+
+    await this.recordAuditLog({
+      actor: actorId,
+      action: 'player.resetAll',
+      entityType: 'Player',
+      entityId: 'all',
+      after: { playersModified, teamsModified },
+    });
+
+    eventBus.emit('player.resetAll', { modifiedCount: playersModified });
+    if (teamsModified > 0) {
+      eventBus.emit('team.resetAll', { modifiedCount: teamsModified });
+    }
+    return playersModified;
   }
 }

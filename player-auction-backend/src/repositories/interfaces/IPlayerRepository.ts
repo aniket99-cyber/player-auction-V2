@@ -12,4 +12,11 @@ export interface IPlayerRepository extends IRepository<IPlayer> {
   restore(id: string): Promise<IPlayer | null>;
   bulkUpdateStatus(ids: string[], isDeleted: boolean): Promise<number>;
   bulkUpdateAuctionStatus(ids: string[], auctionStatus: PlayerAuctionStatus): Promise<number>;
+  /**
+   * Restarts every player for a new auction: sets everyone back to PENDING
+   * except captains and retained players, who keep their team/status/price.
+   */
+  resetForAuction(): Promise<number>;
+  /** Full wipe: every player becomes PENDING with no team, price, or retention. */
+  resetAll(): Promise<number>;
 }

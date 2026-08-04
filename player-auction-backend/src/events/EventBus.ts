@@ -18,17 +18,22 @@ export interface DomainEventMap {
   'auction.awaitingNextRound': { auctionId: string; round: number; unsoldCount: number };
   'auction.roundStarted': { auctionId: string; round: number };
   'auction.activeChanged': { activeAuctionId: string | null };
+  'auction.deleted': { auctionId: string };
   'team.created': { team: ITeam };
   'team.updated': { team: ITeam };
   'team.deleted': { teamId: string };
   'team.restored': { team: ITeam };
   'team.retentionAdded': { team: ITeam };
   'team.bulkStatusChanged': { teamIds: string[]; isDeleted: boolean };
+  'team.resetForAuction': { modifiedCount: number };
+  'team.resetAll': { modifiedCount: number };
   'player.created': { player: IPlayer };
   'player.updated': { player: IPlayer };
   'player.deleted': { playerId: string };
   'player.restored': { player: IPlayer };
   'player.bulkStatusChanged': { playerIds: string[]; isDeleted: boolean };
+  'player.resetForAuction': { modifiedCount: number };
+  'player.resetAll': { modifiedCount: number };
 }
 
 type EventName = keyof DomainEventMap;

@@ -86,4 +86,46 @@ export class TeamRepository extends BaseRepository<ITeam> implements ITeamReposi
       )
       .exec();
   }
+
+  async resetForAuction(): Promise<number> {
+    const teams = await this.model.find({}).exec();
+    let modifiedCount = 0;
+
+    await Promise.all(
+      teams.map(async (team) => {
+        const retentionCost = team.retentions.reduce((sum, r) => sum + r.retentionPrice, 0);
+        const keptPlayerIds = new Set<string>(team.retentions.map((r) => r.player.toString()));
+        if (team.captain) {
+          keptPlayerIds.add(team.captain.toString());
+        }
+
+        const result = await this.model
+          .updateOne(
+            { _id: team._id },
+            {
+              remainingBudget: team.totalBudget - retentionCost,
+              players: Array.from(keptPlayerIds),
+            },
+          )
+          .exec();
+        modifiedCount += result.modifiedCount;
+      }),
+    );
+
+    return modifiedCount;
+  }
+
+  async resetAll(): Promise<number> {
+    const result = await this.model
+      .updateMany(
+        {},
+        [
+          { $set: { remainingBudget: '$totalBudget', retentions: [], players: [] } },
+          { $unset: ['captain'] },
+        ],
+        { updatePipeline: true },
+      )
+      .exec();
+    return result.modifiedCount;
+  }
 }

@@ -117,4 +117,8 @@ export function registerAuctionGateway(io: Server): void {
   eventBus.on('auction.activeChanged', ({ activeAuctionId }) => {
     auctionNamespace.emit('auction:activeChanged', { activeAuctionId });
   });
+
+  eventBus.on('auction.deleted', ({ auctionId }) => {
+    auctionNamespace.emit('auction:deleted', { auctionId });
+  });
 }

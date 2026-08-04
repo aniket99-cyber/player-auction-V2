@@ -81,4 +81,35 @@ export class PlayerRepository extends BaseRepository<IPlayer> implements IPlayer
       .exec();
     return result.modifiedCount;
   }
+
+  async resetForAuction(): Promise<number> {
+    const result = await this.model
+      .updateMany(
+        {
+          auctionStatus: { $nin: [PlayerAuctionStatus.CAPTAIN, PlayerAuctionStatus.RETAINED] },
+          isRetained: { $ne: true },
+        },
+        {
+          auctionStatus: PlayerAuctionStatus.PENDING,
+          isRetained: false,
+          $unset: { soldTo: '', soldPrice: '' },
+        },
+      )
+      .exec();
+    return result.modifiedCount;
+  }
+
+  async resetAll(): Promise<number> {
+    const result = await this.model
+      .updateMany(
+        {},
+        {
+          auctionStatus: PlayerAuctionStatus.PENDING,
+          isRetained: false,
+          $unset: { soldTo: '', soldPrice: '' },
+        },
+      )
+      .exec();
+    return result.modifiedCount;
+  }
 }

@@ -38,4 +38,12 @@ export function registerTeamGateway(io: Server): void {
   eventBus.on('team.bulkStatusChanged', ({ teamIds, isDeleted }) => {
     teamNamespace.emit('team:bulkStatusChanged', { teamIds, isDeleted });
   });
+
+  eventBus.on('team.resetForAuction', ({ modifiedCount }) => {
+    teamNamespace.emit('team:resetForAuction', { modifiedCount });
+  });
+
+  eventBus.on('team.resetAll', ({ modifiedCount }) => {
+    teamNamespace.emit('team:resetAll', { modifiedCount });
+  });
 }

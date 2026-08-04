@@ -147,6 +147,14 @@ export class TeamController {
     res.status(200).json(new ApiResponse('Audit history retrieved', history));
   };
 
+  resetForAuction = async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) throw ApiError.unauthorized();
+    const modifiedCount = await this.teamService.resetForAuction(req.user.sub);
+    res.status(200).json(
+      new ApiResponse('Teams reset for auction — captains and retentions preserved', { modifiedCount }),
+    );
+  };
+
   importCsv = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) throw ApiError.unauthorized();
     if (!req.file) {

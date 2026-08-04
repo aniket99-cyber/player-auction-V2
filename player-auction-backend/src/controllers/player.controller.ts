@@ -158,6 +158,14 @@ export class PlayerController {
     res.status(200).json(new ApiResponse('Audit history retrieved', history));
   };
 
+  resetAll = async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) throw ApiError.unauthorized();
+    const modifiedCount = await this.playerService.resetAll(req.user.sub);
+    res.status(200).json(
+      new ApiResponse('All players and teams reset — no captains or retentions remain', { modifiedCount }),
+    );
+  };
+
   importCsv = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) throw ApiError.unauthorized();
     if (!req.file) {

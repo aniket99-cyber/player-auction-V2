@@ -34,4 +34,12 @@ export function registerPlayerGateway(io: Server): void {
   eventBus.on('player.bulkStatusChanged', ({ playerIds, isDeleted }) => {
     playerNamespace.emit('player:bulkStatusChanged', { playerIds, isDeleted });
   });
+
+  eventBus.on('player.resetForAuction', ({ modifiedCount }) => {
+    playerNamespace.emit('player:resetForAuction', { modifiedCount });
+  });
+
+  eventBus.on('player.resetAll', ({ modifiedCount }) => {
+    playerNamespace.emit('player:resetAll', { modifiedCount });
+  });
 }

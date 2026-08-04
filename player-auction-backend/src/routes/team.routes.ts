@@ -58,6 +58,13 @@ router.patch(
   asyncHandler(teamController.bulkUpdateStatus),
 );
 
+router.post(
+  '/reset-for-auction',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  asyncHandler(teamController.resetForAuction),
+);
+
 // Public reads: the Live Viewer needs the team list (leaderboard, budgets,
 // crests) with no login. Every mutating route below stays behind `authenticate`.
 router.get('/', asyncHandler(teamController.list));
